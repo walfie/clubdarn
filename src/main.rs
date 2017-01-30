@@ -1,81 +1,57 @@
-extern crate hyper;
+#![feature(proc_macro)]
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
+
+#[macro_use]
+extern crate serde_derive;
+
 extern crate serde;
 extern crate serde_json;
 
-use hyper::Client;
-use std::io::Read;
-use serde_json::Map;
+#[derive(Default, Serialize)]
+struct DkDamSearchServletRequest {
+    #[serde(rename = "appVer")] app_ver: String,
+    #[serde(rename = "deviceId")] device_id: String,
+    #[serde(rename = "deviceNm")] device_nm: String,
+    #[serde(rename = "osVer")] os_ver: String,
+
+    #[serde(rename = "page")] page: String,
+    #[serde(rename = "categoryCd")] category_cd: String,
+
+    #[serde(rename = "serialNo", skip_serializing_if = "Option::is_none")]
+    serial_no: Option<String>,
+
+    #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
+    artist_id: Option<String>,
+
+    #[serde(rename = "artistName", skip_serializing_if = "Option::is_none")]
+    artist_name: Option<String>,
+    #[serde(rename = "artist_matchType", skip_serializing_if = "Option::is_none")]
+    artist_match_type: Option<String>,
+
+    #[serde(rename = "songName", skip_serializing_if = "Option::is_none")]
+    song_name: Option<String>,
+    #[serde(rename = "songMatchType", skip_serializing_if = "Option::is_none")]
+    song_match_type: Option<String>,
+
+    #[serde(rename = "programTitle", skip_serializing_if = "Option::is_none")]
+    program_title: Option<String>
+}
 
 fn main() {
-    let base_url = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
+    let req = DkDamSearchServletRequest {
+        app_ver: "1.2.0".to_string(),
+        device_id: "test".to_string(),
+        device_nm: "hello".to_string(),
+        os_ver: "4.4.4".to_string(),
 
-    let client = Client::new();
-
-    let song_name = "Passion Flower";
-    let json = find_songs_by_name(
-        0,
-        SongMatchType::StartsWith,
-        song_name,
-        KaraokeMachineType::Premier
-    );
-
-    let mut resp = client.post(base_url)
-        .body(&json)
-        .send()
-        .unwrap();
-
-    let mut buffer = String::new();
-
-    match resp.read_to_string(&mut buffer) {
-        Ok(_) => (), // Success
-        Err(e) => println!("Failed: {:?}", e)
+        page: "1".to_string(),
+        category_cd: "020000".to_string(),
+        .. Default::default()
     };
 
-    println!("{:?}", buffer);
-}
+    let json = serde_json::to_string_pretty(&req).unwrap();
 
-enum SongMatchType { StartsWith, Partial }
-impl SongMatchType {
-    fn value(self) -> &'static str {
-        match self {
-            SongMatchType::StartsWith => "0",
-            SongMatchType::Partial => "1"
-        }
-    }
-}
-
-enum KaraokeMachineType { Default, Premier }
-impl KaraokeMachineType {
-    fn value(self) -> Option<&'static str> {
-        match self {
-            KaraokeMachineType::Default => None,
-            KaraokeMachineType::Premier => Some("AB316238")
-        }
-    }
-}
-
-fn find_songs_by_name(
-    page: i32,
-    match_type: SongMatchType,
-    song_name: &str,
-    machine_type: KaraokeMachineType
-) -> String {
-    let page_string = page.to_string();
-
-    let mut map = Map::new();
-    map.insert("appVer".to_string(), "2.1.0");
-    map.insert("deviceId".to_string(), "");
-    map.insert("categoryCd".to_string(), "020000");
-
-    map.insert("page".to_string(), &page_string);
-
-    for machine_type_value in machine_type.value().iter() {
-        map.insert("serialNo".to_string(), machine_type_value);
-    };
-
-    map.insert("songMatchType".to_string(), match_type.value());
-    map.insert("songName".to_string(), song_name);
-
-    serde_json::to_string(&map).unwrap()
+    println!("{}", json);
 }
 
