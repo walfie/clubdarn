@@ -7,19 +7,21 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-mod protocol;
+pub mod protocol;
 
 pub fn example() -> String {
-    let req = protocol::DkDamSearchServletRequest {
+    let mut req = protocol::DkDamSearchServletRequest {
         app_ver: "1.2.0",
         device_id: "test",
         device_nm: "hello",
         os_ver: "4.4.4",
-
-        page: "1",
-        category_cd: "020000",
         .. Default::default()
     };
+
+    req
+        .page("1")
+        .serial_no("AB316238")
+        .by_song_name("passion flower", protocol::STARTS_WITH);
 
     serde_json::to_string_pretty(&req).unwrap()
 }
