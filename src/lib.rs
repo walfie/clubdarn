@@ -8,18 +8,19 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod protocol;
+pub mod client;
 
 pub fn example() -> String {
     let mut req = protocol::DkDamSearchServletRequest {
-        app_ver: "1.2.0",
-        device_id: "test",
-        device_nm: "hello",
-        os_ver: "4.4.4",
+        app_ver: "1.2.0".into(),
+        device_id: "test".into(),
+        device_nm: "hello".into(),
+        os_ver: "4.4.4".into(),
         .. Default::default()
     };
 
     req
-        .page("1")
+        .page(1)
         .serial_no("AB316238")
         .by_song_name("passion flower", protocol::STARTS_WITH);
 
