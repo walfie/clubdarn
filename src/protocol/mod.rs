@@ -53,7 +53,7 @@ impl<'a> DkDamSearchServletRequest<'a> {
     }
 
     pub fn serial_no(&mut self, serial_no: &'a str) -> &mut Self {
-       self.serial_no = Some(serial_no.into());
+       self.serial_no = Some(serial_no);
        self
     }
 
@@ -63,29 +63,29 @@ impl<'a> DkDamSearchServletRequest<'a> {
     }
 
     pub fn by_artist_id(&mut self, id: &'a str) -> &mut Self {
-        self.artist_id = Some(id.into());
-        self.category_cd = categories::ARTIST_NAME.0.into();
+        self.artist_id = Some(id);
+        self.category_cd = categories::ARTIST_NAME.0;
         self
     }
 
     pub fn by_artist_name(&mut self, name: &'a str, match_type: MatchType) -> &mut Self {
-        self.artist_name = Some(name.into());
-        self.artist_match_type = Some(match_type.0.into());
-        self.category_cd = categories::ARTIST_NAME.0.into();
+        self.artist_name = Some(name);
+        self.artist_match_type = Some(match_type.0);
+        self.category_cd = categories::ARTIST_NAME.0;
         self
     }
 
     pub fn by_song_name(&mut self, name: &'a str, match_type: MatchType) -> &mut Self {
-        self.song_name = Some(name.into());
-        self.song_match_type = Some(match_type.0.into());
-        self.category_cd = categories::SONG_NAME.0.into();
+        self.song_name = Some(name);
+        self.song_match_type = Some(match_type.0);
+        self.category_cd = categories::SONG_NAME.0;
         self
     }
 
     // Anime only
     pub fn by_program_title(&mut self, title: &'a str) -> &mut Self {
-        self.program_title = Some(title.into());
-        self.category_cd = categories::ANIMATION_SPECIAL_EFFECTS_ANIME.0.into();
+        self.program_title = Some(title);
+        self.category_cd = categories::ANIMATION_SPECIAL_EFFECTS_ANIME.0;
         self
     }
 }

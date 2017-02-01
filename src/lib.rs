@@ -11,19 +11,14 @@ pub mod protocol;
 pub mod client;
 
 pub fn example() -> String {
-    let mut req = protocol::DkDamSearchServletRequest {
+    let client = client::Client {
         app_ver: "1.2.0",
         device_id: "test",
         device_nm: "hello",
         os_ver: "4.4.4",
-        .. Default::default()
+        serial_no: Some("AB316238")
     };
 
-    req
-        .page(1)
-        .serial_no("AB316238")
-        .by_song_name("passion flower", protocol::STARTS_WITH);
-
-    serde_json::to_string_pretty(&req).unwrap()
+    client.songs_by_artist_id("1")
 }
 
