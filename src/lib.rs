@@ -12,10 +12,10 @@ pub mod client;
 
 pub fn example() -> String {
     let mut req = protocol::DkDamSearchServletRequest {
-        app_ver: "1.2.0".into(),
-        device_id: "test".into(),
-        device_nm: "hello".into(),
-        os_ver: "4.4.4".into(),
+        app_ver: "1.2.0",
+        device_id: "test",
+        device_nm: "hello",
+        os_ver: "4.4.4",
         .. Default::default()
     };
 

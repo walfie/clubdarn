@@ -1,40 +1,46 @@
 pub mod categories;
 
-use std::borrow::Cow;
+use serde::Serializer;
+
+fn serialize_i8_as_str<S>(n: &i8, serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer
+    {
+        serializer.serialize_str((*n).to_string().as_str())
+    }
 
 #[derive(Default, Serialize)]
 pub struct DkDamSearchServletRequest<'a> {
     #[serde(rename = "appVer")]
-    pub app_ver: Cow<'a, str>,
+    pub app_ver: &'a str,
     #[serde(rename = "deviceId")]
-    pub device_id: Cow<'a, str>,
+    pub device_id: &'a str,
     #[serde(rename = "deviceNm")]
-    pub device_nm: Cow<'a, str>,
+    pub device_nm: &'a str,
     #[serde(rename = "osVer")]
-    pub os_ver: Cow<'a, str>,
+    pub os_ver: &'a str,
     #[serde(rename = "serialNo", skip_serializing_if = "Option::is_none")]
-    pub serial_no: Option<Cow<'a, str>>,
+    pub serial_no: Option<&'a str>,
 
-    #[serde(rename = "page")]
-    pub page: Cow<'a, str>,
+    #[serde(rename = "page", serialize_with = "serialize_i8_as_str")]
+    pub page: i8,
     #[serde(rename = "categoryCd")]
-    pub category_cd: Cow<'a, str>,
+    pub category_cd: &'a str,
 
     #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
-    pub artist_id: Option<Cow<'a, str>>,
+    pub artist_id: Option<&'a str>,
 
     #[serde(rename = "artistName", skip_serializing_if = "Option::is_none")]
-    pub artist_name: Option<Cow<'a, str>>,
+    pub artist_name: Option<&'a str>,
     #[serde(rename = "artistMatchType", skip_serializing_if = "Option::is_none")]
-    pub artist_match_type: Option<Cow<'a, str>>,
+    pub artist_match_type: Option<&'a str>,
 
     #[serde(rename = "songName", skip_serializing_if = "Option::is_none")]
-    pub song_name: Option<Cow<'a, str>>,
+    pub song_name: Option<&'a str>,
     #[serde(rename = "songMatchType", skip_serializing_if = "Option::is_none")]
-    pub song_match_type: Option<Cow<'a, str>>,
+    pub song_match_type: Option<&'a str>,
 
     #[serde(rename = "programTitle", skip_serializing_if = "Option::is_none")]
-    pub program_title: Option<Cow<'a, str>>
+    pub program_title: Option<&'a str>
 }
 
 pub struct MatchType(pub &'static str);
@@ -43,7 +49,7 @@ pub const CONTAINS: MatchType = MatchType("1");
 
 impl<'a> DkDamSearchServletRequest<'a> {
     pub fn new() -> Self {
-        DkDamSearchServletRequest { page: "1".into(), .. Default::default() }
+        DkDamSearchServletRequest { page: 1, .. Default::default() }
     }
 
     pub fn serial_no(&mut self, serial_no: &'a str) -> &mut Self {
@@ -52,7 +58,7 @@ impl<'a> DkDamSearchServletRequest<'a> {
     }
 
     pub fn page(&mut self, page: i8) -> &mut Self {
-        self.page = page.to_string().into();
+        self.page = page;
         self
     }
 
