@@ -19,5 +19,5 @@ pub fn example() -> String {
         serial_no: Some("AB316238"),
     };
 
-    client.songs_by_artist_id("1")
+    client.songs_by_title("passion flower", client::STARTS_WITH)
 }
