@@ -8,7 +8,7 @@ pub struct Client<'a> {
     pub device_id: &'a str,
     pub device_nm: &'a str,
     pub os_ver: &'a str,
-    pub serial_no: Option<&'a str>
+    pub serial_no: Option<&'a str>,
 }
 
 impl<'a> Client<'a> {
@@ -20,7 +20,7 @@ impl<'a> Client<'a> {
             os_ver: self.os_ver,
             serial_no: self.serial_no,
             page: 1,
-            .. Default::default()
+            ..Default::default()
         }
     }
 
@@ -28,7 +28,7 @@ impl<'a> Client<'a> {
         make_request(DkDamSearchServletRequest {
             artist_id: Some(id),
             category_cd: categories::ARTIST_NAME.0,
-            .. self.default_request()
+            ..self.default_request()
         })
     }
 }
@@ -36,4 +36,3 @@ impl<'a> Client<'a> {
 fn make_request(req: DkDamSearchServletRequest) -> String {
     serde_json::to_string_pretty(&req).unwrap() // TODO
 }
-

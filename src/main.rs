@@ -4,4 +4,3 @@ fn main() {
     let value = karaok::example();
     println!("{}", value);
 }
-

@@ -47,4 +47,3 @@ pub const VOCALOID_KAMUI_GAKUPO: CategoryId = CategoryId("060600");
 pub const VOCALOID_LILY: CategoryId = CategoryId("060700");
 pub const VOCALOID_MEGURINE_RUKA: CategoryId = CategoryId("060300");
 pub const VOCALOID_OTHER: CategoryId = CategoryId("060800");
-

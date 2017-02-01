@@ -16,9 +16,8 @@ pub fn example() -> String {
         device_id: "test",
         device_nm: "hello",
         os_ver: "4.4.4",
-        serial_no: Some("AB316238")
+        serial_no: Some("AB316238"),
     };
 
     client.songs_by_artist_id("1")
 }
-

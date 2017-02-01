@@ -4,9 +4,9 @@ use serde::Serializer;
 
 fn serialize_i8_as_str<S>(n: &i8, serializer: S) -> Result<S::Ok, S::Error>
     where S: Serializer
-    {
-        serializer.serialize_str((*n).to_string().as_str())
-    }
+{
+    serializer.serialize_str((*n).to_string().as_str())
+}
 
 #[derive(Default, Serialize)]
 pub struct DkDamSearchServletRequest<'a> {
@@ -40,7 +40,7 @@ pub struct DkDamSearchServletRequest<'a> {
     pub song_match_type: Option<&'a str>,
 
     #[serde(rename = "programTitle", skip_serializing_if = "Option::is_none")]
-    pub program_title: Option<&'a str>
+    pub program_title: Option<&'a str>,
 }
 
 pub struct MatchType(pub &'static str);
@@ -49,12 +49,12 @@ pub const CONTAINS: MatchType = MatchType("1");
 
 impl<'a> DkDamSearchServletRequest<'a> {
     pub fn new() -> Self {
-        DkDamSearchServletRequest { page: 1, .. Default::default() }
+        DkDamSearchServletRequest { page: 1, ..Default::default() }
     }
 
     pub fn serial_no(&mut self, serial_no: &'a str) -> &mut Self {
-       self.serial_no = Some(serial_no);
-       self
+        self.serial_no = Some(serial_no);
+        self
     }
 
     pub fn page(&mut self, page: i8) -> &mut Self {
@@ -89,4 +89,3 @@ impl<'a> DkDamSearchServletRequest<'a> {
         self
     }
 }
-
