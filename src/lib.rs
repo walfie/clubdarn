@@ -11,13 +11,8 @@ pub mod protocol;
 pub mod client;
 
 pub fn example() -> String {
-    let client = client::Client {
-        app_ver: "1.2.0",
-        device_id: "test",
-        device_nm: "hello",
-        os_ver: "4.4.4",
-        serial_no: Some("AB316238"),
-    };
+    let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
 
-    client.songs_by_title("passion flower", client::STARTS_WITH)
+    // TODO
+    client.songs_by_title("passion flower", client::STARTS_WITH).execute()
 }
