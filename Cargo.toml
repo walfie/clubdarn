@@ -6,7 +6,7 @@ authors = ["Walfie <walfington@gmail.com>"]
 [dependencies]
 clippy = {version = "*", optional = true}
 
-hyper = "0.10"
+reqwest = "0.4"
 serde = "0.9"
 serde_derive = "0.9"
 serde_json = "0.9"

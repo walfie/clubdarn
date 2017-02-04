@@ -1,12 +1,14 @@
-use protocol::{categories, DkDamSearchServletRequest};
-use std::sync::Arc;
-use std::marker::PhantomData;
-
 extern crate serde_json;
-extern crate hyper;
+extern crate reqwest;
+
+use protocol::{categories, DkDamSearchServletRequest, DkDamSearchServletResponse};
+use protocol;
+use std::io::Read;
+use std::marker::PhantomData;
+use std::sync::Arc;
 
 pub struct Client<'a> {
-    http: Arc<hyper::Client>,
+    http: Arc<reqwest::Client>,
     default_request: DkDamSearchServletRequest<'a>,
 }
 
@@ -22,7 +24,7 @@ impl<'a> Client<'a> {
         };
 
         Client {
-            http: Arc::new(hyper::Client::new()),
+            http: Arc::new(reqwest::Client::new().unwrap()),
             default_request: req,
         }
     }
@@ -87,7 +89,7 @@ pub const STARTS_WITH: MatchType = MatchType("0");
 pub const CONTAINS: MatchType = MatchType("1");
 
 pub struct RequestBuilder<'a> {
-    http: Arc<hyper::Client>,
+    http: Arc<reqwest::Client>,
     inner: DkDamSearchServletRequest<'a>, 
     // response_type: PhantomData<T>,
 }
@@ -98,8 +100,18 @@ impl<'a> RequestBuilder<'a> {
         self
     }
 
-    pub fn execute(&self) -> String {
-        let json = serde_json::to_string_pretty(&self.inner).unwrap();
-        json
+    // TODO: Handle errors
+    pub fn execute(&self) -> DkDamSearchServletResponse {
+        let json = serde_json::to_string(&self.inner).unwrap();
+        let mut resp = self.http
+            .post(protocol::SEARCH_URL)
+            .body(json)
+            .send()
+            .unwrap();
+
+        let mut buffer = String::new();
+        resp.read_to_string(&mut buffer);
+
+        serde_json::from_str(&buffer).unwrap()
     }
 }

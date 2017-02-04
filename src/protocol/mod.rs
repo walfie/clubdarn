@@ -13,7 +13,9 @@ fn deserialize_string_as_i32<D: Deserializer>(deserializer: D) -> Result<i32, D:
     })
 }
 
-#[derive(Default, Serialize)]
+pub const SEARCH_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
+
+#[derive(Default, Debug, Serialize)]
 pub struct DkDamSearchServletRequest<'a> {
     #[serde(rename = "appVer")]
     pub app_ver: &'a str,
@@ -48,48 +50,48 @@ pub struct DkDamSearchServletRequest<'a> {
     pub program_title: Option<&'a str>,
 }
 
-#[derive(Serialize)]
-pub struct DkDamSearchServletResponse<'a> {
+#[derive(Debug, Deserialize)]
+pub struct DkDamSearchServletResponse {
     #[serde(rename = "searchResult")]
-    search_result: Vec<DkDamSearchServletSearchResult<'a>>,
+    search_result: Vec<DkDamSearchServletSearchResult>,
     #[serde(rename = "totalCount", deserialize_with = "deserialize_string_as_i32")]
     total_count: i32,
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
     total_page: i32,
 }
 
-#[derive(Serialize)]
-pub struct DkDamSearchServletSearchResult<'a> {
+#[derive(Debug, Deserialize)]
+pub struct DkDamSearchServletSearchResult {
     #[serde(rename = "artistId")]
-    artist_id: &'a str,
+    artist_id: String,
     #[serde(rename = "artistName")]
-    artist_name: &'a str,
+    artist_name: String,
     #[serde(rename = "distEnd")]
-    dist_end: &'a str,
+    dist_end: String,
     #[serde(rename = "distStart")]
-    dist_start: &'a str,
+    dist_start: String,
     #[serde(rename = "firstBars")]
-    first_bars: &'a str,
+    first_bars: String,
     #[serde(rename = "funcAnimePicture")]
-    func_anime_picture: &'a str,
+    func_anime_picture: String,
     #[serde(rename = "funcPersonPicture")]
-    func_person_picture: &'a str,
+    func_person_picture: String,
     #[serde(rename = "funcRecording")]
-    func_recording: &'a str,
+    func_recording: String,
     #[serde(rename = "funcScore")]
-    func_score: &'a str,
+    func_score: String,
     #[serde(rename = "indicationMonth")]
-    indication_month: &'a str,
+    indication_month: String,
     #[serde(rename = "myKey")]
-    my_key: &'a str,
+    my_key: String,
     #[serde(rename = "orgKey")]
-    org_key: &'a str,
+    org_key: String,
     #[serde(rename = "programTitle")]
-    program_title: &'a str,
+    program_title: String,
     #[serde(rename = "reqNo")]
-    req_no: &'a str,
+    req_no: String,
     #[serde(rename = "songName")]
-    song_name: &'a str,
+    song_name: String,
     #[serde(rename = "titleFirstKana")]
-    title_first_kana: &'a str,
+    title_first_kana: String,
 }
