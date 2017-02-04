@@ -3,7 +3,6 @@ extern crate reqwest;
 
 use protocol::{categories, DkDamSearchServletRequest, DkDamSearchServletResponse};
 use protocol;
-use std::io::Read;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -103,15 +102,13 @@ impl<'a> RequestBuilder<'a> {
     // TODO: Handle errors
     pub fn execute(&self) -> DkDamSearchServletResponse {
         let json = serde_json::to_string(&self.inner).unwrap();
-        let mut resp = self.http
+
+        self.http
             .post(protocol::SEARCH_URL)
             .body(json)
             .send()
-            .unwrap();
-
-        let mut buffer = String::new();
-        resp.read_to_string(&mut buffer);
-
-        serde_json::from_str(&buffer).unwrap()
+            .unwrap()
+            .json()
+            .unwrap()
     }
 }
