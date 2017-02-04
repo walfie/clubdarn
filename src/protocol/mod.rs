@@ -2,6 +2,7 @@ pub mod categories;
 
 use serde::{Deserialize, Deserializer, Serializer};
 use serde::de;
+use std::borrow::Cow;
 
 fn serialize_i32_as_str<S: Serializer>(n: &i32, serializer: S) -> Result<S::Ok, S::Error> {
     serializer.serialize_str((*n).to_string().as_str())
@@ -51,47 +52,47 @@ pub struct DkDamSearchServletRequest<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DkDamSearchServletResponse {
+pub struct DkDamSearchServletResponse<'a> {
     #[serde(rename = "searchResult")]
-    search_result: Vec<DkDamSearchServletSearchResult>,
+    pub search_result: Vec<DkDamSearchServletSearchResult<'a>>,
     #[serde(rename = "totalCount", deserialize_with = "deserialize_string_as_i32")]
-    total_count: i32,
+    pub total_count: i32,
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
-    total_page: i32,
+    pub total_page: i32,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DkDamSearchServletSearchResult {
+pub struct DkDamSearchServletSearchResult<'a> {
     #[serde(rename = "artistId")]
-    artist_id: String,
+    pub artist_id: Cow<'a, str>,
     #[serde(rename = "artistName")]
-    artist_name: String,
+    pub artist_name: Cow<'a, str>,
     #[serde(rename = "distEnd")]
-    dist_end: String,
+    pub dist_end: Cow<'a, str>,
     #[serde(rename = "distStart")]
-    dist_start: String,
+    pub dist_start: Cow<'a, str>,
     #[serde(rename = "firstBars")]
-    first_bars: String,
+    pub first_bars: Cow<'a, str>,
     #[serde(rename = "funcAnimePicture")]
-    func_anime_picture: String,
+    pub func_anime_picture: Cow<'a, str>,
     #[serde(rename = "funcPersonPicture")]
-    func_person_picture: String,
+    pub func_person_picture: Cow<'a, str>,
     #[serde(rename = "funcRecording")]
-    func_recording: String,
+    pub func_recording: Cow<'a, str>,
     #[serde(rename = "funcScore")]
-    func_score: String,
+    pub func_score: Cow<'a, str>,
     #[serde(rename = "indicationMonth")]
-    indication_month: String,
+    pub indication_month: Cow<'a, str>,
     #[serde(rename = "myKey")]
-    my_key: String,
+    pub my_key: Cow<'a, str>,
     #[serde(rename = "orgKey")]
-    org_key: String,
+    pub org_key: Cow<'a, str>,
     #[serde(rename = "programTitle")]
-    program_title: String,
+    pub program_title: Cow<'a, str>,
     #[serde(rename = "reqNo")]
-    req_no: String,
+    pub req_no: Cow<'a, str>,
     #[serde(rename = "songName")]
-    song_name: String,
+    pub song_name: Cow<'a, str>,
     #[serde(rename = "titleFirstKana")]
-    title_first_kana: String,
+    pub title_first_kana: Cow<'a, str>,
 }

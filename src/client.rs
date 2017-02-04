@@ -1,6 +1,7 @@
 extern crate serde_json;
 extern crate reqwest;
 
+use models;
 use protocol::{categories, DkDamSearchServletRequest, DkDamSearchServletResponse};
 use protocol;
 use std::marker::PhantomData;
@@ -100,7 +101,7 @@ impl<'a> RequestBuilder<'a> {
     }
 
     // TODO: Handle errors
-    pub fn execute(&self) -> DkDamSearchServletResponse {
+    pub fn execute(&self) -> DkDamSearchServletResponse<'a> {
         let json = serde_json::to_string(&self.inner).unwrap();
 
         self.http

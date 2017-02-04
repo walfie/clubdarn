@@ -9,11 +9,12 @@ extern crate serde_json;
 
 pub mod protocol;
 pub mod client;
+pub mod models;
 
-pub fn example() -> protocol::DkDamSearchServletResponse {
+pub fn example() -> () {
     let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
 
     let result = client.songs_by_title("passion flower", client::STARTS_WITH).execute();
 
-    result
+    println!("{:?}", result)
 }
