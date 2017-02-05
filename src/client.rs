@@ -125,17 +125,20 @@ impl<'a, T> RequestBuilder<'a, T>
             .json()
             .unwrap();
 
+        let body =
+            Paginated::from_results_wrapper(self.inner.page, self.inner.category_cd.into(), result);
+
         Response {
             request: self,
-            body: Paginated::from(result),
+            body: body,
         }
     }
 }
 
 #[derive(Debug)]
 pub struct Response<'a, T> {
-    request: RequestBuilder<'a, T>,
-    body: Paginated<T>,
+    pub request: RequestBuilder<'a, T>,
+    pub body: Paginated<'a, T>,
 }
 
 impl<'a, T> Response<'a, T> {
@@ -160,9 +163,9 @@ impl<'a, T> Response<'a, T> {
 }
 
 impl<'a, T> Deref for Response<'a, T> {
-    type Target = Paginated<T>;
+    type Target = Paginated<'a, T>;
 
-    fn deref(&self) -> &Paginated<T> {
+    fn deref(&self) -> &Paginated<'a, T> {
         &self.body
     }
 }

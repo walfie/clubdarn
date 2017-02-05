@@ -15,8 +15,8 @@ pub fn example() -> () {
     let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
 
     let songs = client.songs_by_title("passion flower", client::STARTS_WITH).execute();
-    println!("{:?}", songs);
+    println!("{:?}", songs.body);
 
     let artists = client.artists_by_name("AIKATSU", client::STARTS_WITH).execute();
-    println!("{:?}", artists);
+    println!("{:?}", artists.body);
 }
