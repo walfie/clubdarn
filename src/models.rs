@@ -2,7 +2,7 @@ use protocol::{SearchResult, SearchResultsWrapper};
 use std::borrow::Cow;
 use std::convert::From;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Paginated<'a, T> {
     pub page: i32,
     pub category_id: Cow<'a, str>,
@@ -11,13 +11,13 @@ pub struct Paginated<'a, T> {
     pub items: Vec<T>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Artist<'a> {
     pub id: Cow<'a, str>,
     pub name: Cow<'a, str>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Song<'a> {
     pub id: Cow<'a, str>,
     pub title: Cow<'a, str>,
@@ -27,6 +27,7 @@ pub struct Song<'a> {
     pub series: Option<Cow<'a, str>>,
 }
 
+#[derive(Debug, Serialize)]
 pub struct Series<'a> {
     pub title: Cow<'a, str>,
     pub first_kana: Cow<'a, str>,
