@@ -40,16 +40,24 @@ impl<'a, T> Paginated<'a, T>
                                 category_id: Cow<'a, str>,
                                 wrapper: SearchResultsWrapper<'a>)
                                 -> Self {
-        let items = wrapper.search_result
+        let items: Vec<T> = wrapper.search_result
             .into_iter()
             .map(T::from)
             .collect();
+
+        // Sometimes the API says there are multiple pages, but puts all
+        // the results on a single page, so we need to manually check.
+        let total_pages = if (items.len() as i32) >= wrapper.total_count {
+            1
+        } else {
+            wrapper.total_count
+        };
 
         Paginated {
             page: page,
             category_id: category_id,
             total_count: wrapper.total_count,
-            total_pages: wrapper.total_page,
+            total_pages: total_pages,
             items: items,
         }
     }
