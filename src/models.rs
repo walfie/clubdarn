@@ -24,6 +24,7 @@ pub struct Song<'a> {
     pub artist: Artist<'a>,
     pub date_added: Cow<'a, str>,
     pub lyrics: Cow<'a, str>,
+    pub series: Option<Cow<'a, str>>,
 }
 
 pub struct Series<'a> {
@@ -64,11 +65,18 @@ impl<'a> From<SearchResult<'a>> for Artist<'a> {
 
 impl<'a> From<SearchResult<'a>> for Song<'a> {
     fn from(res: SearchResult<'a>) -> Self {
+        let series = if res.program_title.is_empty() {
+            None
+        } else {
+            Some(res.program_title)
+        };
+
         Song {
             id: res.req_no,
             title: res.song_name,
             date_added: res.dist_start, // TODO: DateTime
             lyrics: res.first_bars,
+            series: series,
             artist: Artist {
                 id: res.artist_id,
                 name: res.artist_name,
