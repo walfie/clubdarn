@@ -99,12 +99,14 @@ pub struct MatchType(pub &'static str);
 pub const STARTS_WITH: MatchType = MatchType("0");
 pub const CONTAINS: MatchType = MatchType("1");
 
+#[derive(Debug)]
 pub struct RequestBuilder<'a, T: From<SearchResultsWrapper<'a>>> {
     http: Arc<reqwest::Client>,
     inner: SearchRequest<'a>,
     response_type: PhantomData<T>,
 }
 
+#[derive(Debug)]
 pub struct Response<'a, T: From<SearchResultsWrapper<'a>>> {
     request: RequestBuilder<'a, T>,
     body: T,
@@ -124,7 +126,7 @@ impl<'a, T: From<SearchResultsWrapper<'a>>> RequestBuilder<'a, T> {
     }
 
     // TODO: Handle errors
-    pub fn execute(&self) -> T {
+    pub fn execute(self) -> Response<'a, T> {
         let json = serde_json::to_string(&self.inner).unwrap();
 
         let result = self.http
@@ -135,6 +137,9 @@ impl<'a, T: From<SearchResultsWrapper<'a>>> RequestBuilder<'a, T> {
             .json()
             .unwrap();
 
-        T::from(result)
+        Response {
+            request: self,
+            body: T::from(result),
+        }
     }
 }
