@@ -151,10 +151,18 @@ impl<'a, T> Response<'a, T> {
         let page = self.request.inner.page;
         let next_page = page + delta;
 
-        if next_page <= 0 || next_page >= self.body.total_pages {
-            None
-        } else {
+        if next_page > 0 && next_page <= self.body.total_pages {
             Some(self.request.page(next_page))
+        } else {
+            None
         }
+    }
+}
+
+impl<'a, T> Deref for Response<'a, T> {
+    type Target = Paginated<T>;
+
+    fn deref(&self) -> &Paginated<T> {
+        &self.body
     }
 }

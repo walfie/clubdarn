@@ -14,7 +14,9 @@ pub mod models;
 pub fn example() -> () {
     let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
 
-    let result = client.songs_by_title("passion flower", client::STARTS_WITH).execute();
+    let songs = client.songs_by_title("passion flower", client::STARTS_WITH).execute();
+    println!("{:?}", songs);
 
-    println!("{:?}", result)
+    let artists = client.artists_by_name("AIKATSU", client::STARTS_WITH).execute();
+    println!("{:?}", artists);
 }
