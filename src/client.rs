@@ -2,19 +2,19 @@ extern crate serde_json;
 extern crate reqwest;
 
 use models;
-use protocol::{categories, DkDamSearchServletRequest, DkDamSearchServletResponse};
+use protocol::{categories, SearchRequest, SearchResultsWrapper};
 use protocol;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
-    default_request: DkDamSearchServletRequest<'a>,
+    default_request: SearchRequest<'a>,
 }
 
 impl<'a> Client<'a> {
     pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
-        let req = DkDamSearchServletRequest {
+        let req = SearchRequest {
             app_ver: app_ver,
             device_id: device_id,
             device_nm: device_nm,
@@ -37,7 +37,7 @@ impl<'a> Client<'a> {
     pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder {
         RequestBuilder {
             http: self.http.clone(),
-            inner: DkDamSearchServletRequest {
+            inner: SearchRequest {
                 artist_id: Some(id),
                 category_cd: categories::ARTIST_NAME.0,
                 ..self.default_request
@@ -48,7 +48,7 @@ impl<'a> Client<'a> {
     pub fn songs_by_title(&self, title: &'a str, match_type: MatchType) -> RequestBuilder {
         RequestBuilder {
             http: self.http.clone(),
-            inner: DkDamSearchServletRequest {
+            inner: SearchRequest {
                 song_name: Some(title),
                 category_cd: categories::SONG_NAME.0,
                 song_match_type: Some(match_type.0),
@@ -63,7 +63,7 @@ impl<'a> Client<'a> {
                            -> RequestBuilder {
         RequestBuilder {
             http: self.http.clone(),
-            inner: DkDamSearchServletRequest {
+            inner: SearchRequest {
                 program_title: Some(title),
                 category_cd: category.0,
                 ..self.default_request
@@ -74,7 +74,7 @@ impl<'a> Client<'a> {
     pub fn artists_by_name(&self, name: &'a str, match_type: MatchType) -> RequestBuilder {
         RequestBuilder {
             http: self.http.clone(),
-            inner: DkDamSearchServletRequest {
+            inner: SearchRequest {
                 artist_name: Some(name),
                 category_cd: categories::ARTIST_NAME.0,
                 artist_match_type: Some(match_type.0),
@@ -90,7 +90,7 @@ pub const CONTAINS: MatchType = MatchType("1");
 
 pub struct RequestBuilder<'a> {
     http: Arc<reqwest::Client>,
-    inner: DkDamSearchServletRequest<'a>, 
+    inner: SearchRequest<'a>, 
     // response_type: PhantomData<T>,
 }
 
@@ -101,7 +101,7 @@ impl<'a> RequestBuilder<'a> {
     }
 
     // TODO: Handle errors
-    pub fn execute(&self) -> DkDamSearchServletResponse<'a> {
+    pub fn execute(&self) -> SearchResultsWrapper<'a> {
         let json = serde_json::to_string(&self.inner).unwrap();
 
         self.http

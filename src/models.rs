@@ -1,4 +1,4 @@
-use protocol::{DkDamSearchServletSearchResult, DkDamSearchServletResponse};
+use protocol::{SearchResult, SearchResultsWrapper};
 use std::borrow::Cow;
 use std::convert::From;
 
@@ -21,8 +21,8 @@ pub struct Song<'a> {
     series: Option<Cow<'a, str>>,
 }
 
-impl<'a> From<DkDamSearchServletSearchResult<'a>> for Artist<'a> {
-    fn from(resp: DkDamSearchServletSearchResult<'a>) -> Self {
+impl<'a> From<SearchResult<'a>> for Artist<'a> {
+    fn from(resp: SearchResult<'a>) -> Self {
         Artist {
             id: resp.artist_id,
             name: resp.artist_name,
@@ -30,8 +30,8 @@ impl<'a> From<DkDamSearchServletSearchResult<'a>> for Artist<'a> {
     }
 }
 
-impl<'a> From<DkDamSearchServletSearchResult<'a>> for Song<'a> {
-    fn from(resp: DkDamSearchServletSearchResult<'a>) -> Self {
+impl<'a> From<SearchResult<'a>> for Song<'a> {
+    fn from(resp: SearchResult<'a>) -> Self {
         let series = if resp.program_title.is_empty() {
             None
         } else {
