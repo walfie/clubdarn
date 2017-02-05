@@ -87,6 +87,22 @@ impl<'a> Client<'a> {
             },
         }
     }
+
+    pub fn series_by_category(&self, category: categories::CategoryId) -> RequestBuilder<Series> {
+        RequestBuilder {
+            http: self.http.clone(),
+            response_type: PhantomData,
+            inner: SearchRequest { category_cd: category.0, ..self.default_request },
+        }
+    }
+
+    pub fn new_songs_by_category(&self, category: categories::CategoryId) -> RequestBuilder<Song> {
+        RequestBuilder {
+            http: self.http.clone(),
+            response_type: PhantomData,
+            inner: SearchRequest { category_cd: category.0, ..self.default_request },
+        }
+    }
 }
 
 pub struct MatchType(pub &'static str);
