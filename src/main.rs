@@ -1,6 +1,6 @@
-extern crate karaok;
+extern crate clubdarn;
 
-use karaok::*;
+use clubdarn::*;
 
 extern crate serde;
 extern crate serde_json;
