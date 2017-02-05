@@ -2,7 +2,7 @@ extern crate serde_json;
 extern crate reqwest;
 
 use models::*;
-use protocol::{categories, SearchRequest, SearchResultsWrapper};
+use protocol::{categories, SearchRequest, SearchResult, SearchResultsWrapper};
 use protocol;
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -35,7 +35,7 @@ impl<'a> Client<'a> {
         self
     }
 
-    pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<Paginated<Song>> {
+    pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<Song> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
@@ -47,10 +47,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn songs_by_title(&self,
-                          title: &'a str,
-                          match_type: MatchType)
-                          -> RequestBuilder<Paginated<Song>> {
+    pub fn songs_by_title(&self, title: &'a str, match_type: MatchType) -> RequestBuilder<Song> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
@@ -66,7 +63,7 @@ impl<'a> Client<'a> {
     pub fn songs_by_series(&self,
                            title: &'a str,
                            category: categories::CategoryId)
-                           -> RequestBuilder<Paginated<Song>> {
+                           -> RequestBuilder<Song> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
@@ -78,10 +75,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn artists_by_name(&self,
-                           name: &'a str,
-                           match_type: MatchType)
-                           -> RequestBuilder<Paginated<Artist>> {
+    pub fn artists_by_name(&self, name: &'a str, match_type: MatchType) -> RequestBuilder<Artist> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
@@ -100,36 +94,30 @@ pub const STARTS_WITH: MatchType = MatchType("0");
 pub const CONTAINS: MatchType = MatchType("1");
 
 #[derive(Debug)]
-pub struct RequestBuilder<'a, T: From<SearchResultsWrapper<'a>>> {
+pub struct RequestBuilder<'a, T> {
     http: Arc<reqwest::Client>,
     inner: SearchRequest<'a>,
     response_type: PhantomData<T>,
 }
 
-#[derive(Debug)]
-pub struct Response<'a, T: From<SearchResultsWrapper<'a>>> {
-    request: RequestBuilder<'a, T>,
-    body: T,
-}
-
-impl<'a, T: From<SearchResultsWrapper<'a>>> Deref for Response<'a, T> {
-    type Target = T;
-    fn deref(&self) -> &T {
-        &self.body
+impl<'a, T> RequestBuilder<'a, T> {
+    pub fn page(&self, page_num: i32) -> Self {
+        RequestBuilder {
+            http: self.http.clone(),
+            response_type: self.response_type,
+            inner: SearchRequest { page: page_num, ..self.inner },
+        }
     }
 }
 
-impl<'a, T: From<SearchResultsWrapper<'a>>> RequestBuilder<'a, T> {
-    pub fn page(&mut self, page_num: i32) -> &Self {
-        self.inner.page = page_num;
-        self
-    }
-
+impl<'a, T> RequestBuilder<'a, T>
+    where T: From<SearchResult<'a>>
+{
     // TODO: Handle errors
     pub fn execute(self) -> Response<'a, T> {
         let json = serde_json::to_string(&self.inner).unwrap();
 
-        let result = self.http
+        let result: SearchResultsWrapper = self.http
             .post(protocol::SEARCH_URL)
             .body(json)
             .send()
@@ -139,7 +127,34 @@ impl<'a, T: From<SearchResultsWrapper<'a>>> RequestBuilder<'a, T> {
 
         Response {
             request: self,
-            body: T::from(result),
+            body: Paginated::from(result),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Response<'a, T> {
+    request: RequestBuilder<'a, T>,
+    body: Paginated<T>,
+}
+
+impl<'a, T> Response<'a, T> {
+    pub fn prev_page(&self) -> Option<RequestBuilder<'a, T>> {
+        self.change_page(-1)
+    }
+
+    pub fn next_page(&self) -> Option<RequestBuilder<'a, T>> {
+        self.change_page(1)
+    }
+
+    fn change_page(&self, delta: i32) -> Option<RequestBuilder<'a, T>> {
+        let page = self.request.inner.page;
+        let next_page = page + delta;
+
+        if next_page <= 0 || next_page >= self.body.total_pages {
+            None
+        } else {
+            Some(self.request.page(next_page))
         }
     }
 }

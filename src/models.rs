@@ -4,9 +4,9 @@ use std::convert::From;
 
 #[derive(Debug)]
 pub struct Paginated<T> {
-    total_count: i32,
-    total_pages: i32,
-    items: Vec<T>,
+    pub total_count: i32,
+    pub total_pages: i32,
+    pub items: Vec<T>,
 }
 
 #[derive(Debug)]
