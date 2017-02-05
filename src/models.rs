@@ -1,18 +1,21 @@
 use protocol::{SearchResult, SearchResultsWrapper};
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::convert::From;
 
+#[derive(Debug)]
 pub struct Paginated<T> {
-    page: i32,
     total_count: i32,
+    total_pages: i32,
     items: Vec<T>,
 }
 
+#[derive(Debug)]
 pub struct Artist<'a> {
     id: Cow<'a, str>,
     name: Cow<'a, str>,
 }
 
+#[derive(Debug)]
 pub struct Song<'a> {
     id: Cow<'a, str>,
     title: Cow<'a, str>,
@@ -21,31 +24,48 @@ pub struct Song<'a> {
     series: Option<Cow<'a, str>>,
 }
 
+impl<'a, T> From<SearchResultsWrapper<'a>> for Paginated<T>
+    where T: From<SearchResult<'a>>
+{
+    fn from(wrapper: SearchResultsWrapper<'a>) -> Self {
+        let items = wrapper.search_result
+            .into_iter()
+            .map(T::from)
+            .collect();
+
+        Paginated {
+            total_count: wrapper.total_count,
+            total_pages: wrapper.total_page,
+            items: items,
+        }
+    }
+}
+
 impl<'a> From<SearchResult<'a>> for Artist<'a> {
-    fn from(resp: SearchResult<'a>) -> Self {
+    fn from(res: SearchResult<'a>) -> Self {
         Artist {
-            id: resp.artist_id,
-            name: resp.artist_name,
+            id: res.artist_id,
+            name: res.artist_name,
         }
     }
 }
 
 impl<'a> From<SearchResult<'a>> for Song<'a> {
-    fn from(resp: SearchResult<'a>) -> Self {
-        let series = if resp.program_title.is_empty() {
+    fn from(res: SearchResult<'a>) -> Self {
+        let series = if res.program_title.is_empty() {
             None
         } else {
-            Some(resp.program_title)
+            Some(res.program_title)
         };
 
         Song {
-            id: resp.req_no,
-            title: resp.song_name,
-            date_added: resp.dist_start,
+            id: res.req_no,
+            title: res.song_name,
+            date_added: res.dist_start,
             series: series,
             artist: Artist {
-                id: resp.artist_id,
-                name: resp.artist_name,
+                id: res.artist_id,
+                name: res.artist_name,
             },
         }
     }
