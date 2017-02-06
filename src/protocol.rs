@@ -1,5 +1,3 @@
-pub mod categories;
-
 use serde::{Deserialize, Deserializer, Serializer};
 use serde::de;
 use std::borrow::Cow;

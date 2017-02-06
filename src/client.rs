@@ -1,8 +1,9 @@
 extern crate serde_json;
 extern crate reqwest;
 
-use models::*;
-use protocol::{categories, SearchRequest, SearchResult, SearchResultsWrapper};
+use model::*;
+use category;
+use protocol::{SearchRequest, SearchResult, SearchResultsWrapper};
 use protocol;
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -41,7 +42,7 @@ impl<'a> Client<'a> {
             response_type: PhantomData,
             inner: SearchRequest {
                 artist_id: Some(id),
-                category_cd: categories::ARTIST_NAME.0,
+                category_cd: category::ARTIST_NAME.0,
                 ..self.default_request
             },
         }
@@ -53,7 +54,7 @@ impl<'a> Client<'a> {
             response_type: PhantomData,
             inner: SearchRequest {
                 song_name: Some(title),
-                category_cd: categories::SONG_NAME.0,
+                category_cd: category::SONG_NAME.0,
                 song_match_type: Some(match_type.0),
                 ..self.default_request
             },
@@ -62,7 +63,7 @@ impl<'a> Client<'a> {
 
     pub fn songs_by_series(&self,
                            title: &'a str,
-                           category: categories::CategoryId)
+                           category: category::CategoryId)
                            -> RequestBuilder<Song> {
         RequestBuilder {
             http: self.http.clone(),
@@ -81,14 +82,14 @@ impl<'a> Client<'a> {
             response_type: PhantomData,
             inner: SearchRequest {
                 artist_name: Some(name),
-                category_cd: categories::ARTIST_NAME.0,
+                category_cd: category::ARTIST_NAME.0,
                 artist_match_type: Some(match_type.0),
                 ..self.default_request
             },
         }
     }
 
-    pub fn series_by_category(&self, category: categories::CategoryId) -> RequestBuilder<Series> {
+    pub fn series_by_category(&self, category: category::CategoryId) -> RequestBuilder<Series> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
@@ -96,7 +97,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn new_songs_by_category(&self, category: categories::CategoryId) -> RequestBuilder<Song> {
+    pub fn new_songs_by_category(&self, category: category::CategoryId) -> RequestBuilder<Song> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,

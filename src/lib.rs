@@ -8,5 +8,6 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod protocol;
+pub mod category;
 pub mod client;
-pub mod models;
+pub mod model;
