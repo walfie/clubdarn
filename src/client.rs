@@ -147,6 +147,7 @@ pub struct RequestBuilder<'a, T> {
     underlying: search::Request<'a>,
     response_type: PhantomData<T>,
 }
+
 impl<'a, T> RequestBuilder<'a, T> {
     pub fn page(&self, page_num: i32) -> Self {
         RequestBuilder {

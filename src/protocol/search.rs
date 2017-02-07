@@ -1,20 +1,20 @@
 use super::*;
-use serde::{Deserialize, Deserializer, Serializer};
-use serde::de;
 use std::borrow::Cow;
 
-fn serialize_i32_as_str<S: Serializer>(n: &i32, serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str((*n).to_string().as_str())
-}
-
-fn deserialize_string_as_i32<D: Deserializer>(deserializer: D) -> Result<i32, D::Error> {
-    String::deserialize(deserializer).and_then(|s| {
-        s.parse::<i32>().map_err(|_| de::Error::custom(de::Unexpected::Other("non-numeric string")))
-    })
-}
+use super::serialize_util::*;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
-impl<'a> api::Request for Request<'a> {}
+
+impl<'a> api::Request<'a> for Request<'a> {
+    type ResponseType = Response<'a>;
+    fn url() -> &'a str {
+        API_URL
+    }
+}
+impl<'a> api::Response for Response<'a> {
+    type ItemType = Item<'a>;
+}
+impl<'a> api::Item for Item<'a> {}
 
 #[derive(Default, Debug, Serialize)]
 pub struct Request<'a> {
@@ -60,7 +60,6 @@ pub struct Response<'a> {
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
     pub total_page: i32,
 }
-impl<'a> api::Response for Response<'a> {}
 
 #[derive(Debug, Deserialize)]
 pub struct Item<'a> {
