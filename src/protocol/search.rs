@@ -1,6 +1,6 @@
-use super::*;
+use client::ClientMetadata;
 use std::borrow::Cow;
-
+use super::*;
 use super::serialize_util::*;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
@@ -9,6 +9,18 @@ impl<'a> api::Request<'a> for Request<'a> {
     type ResponseType = Response<'a>;
     fn url() -> &'a str {
         API_URL
+    }
+
+    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self {
+        Request {
+            app_ver: meta.app_ver,
+            device_id: meta.device_id,
+            device_nm: meta.device_nm,
+            os_ver: meta.os_ver,
+            serial_no: meta.serial_no,
+            page: 1,
+            ..Default::default()
+        }
     }
 }
 impl<'a> api::Response for Response<'a> {

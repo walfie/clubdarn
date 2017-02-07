@@ -3,6 +3,7 @@ extern crate reqwest;
 
 use model::*;
 use category;
+use protocol::api::*;
 use protocol::search;
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -14,11 +15,11 @@ pub struct Client<'a> {
 }
 
 pub struct ClientMetadata<'a> {
-    app_ver: &'a str,
-    device_id: &'a str,
-    device_nm: &'a str,
-    os_ver: &'a str,
-    serial_no: Option<&'a str>,
+    pub app_ver: &'a str,
+    pub device_id: &'a str,
+    pub device_nm: &'a str,
+    pub os_ver: &'a str,
+    pub serial_no: Option<&'a str>,
 }
 
 impl<'a> Client<'a> {
@@ -37,25 +38,17 @@ impl<'a> Client<'a> {
         }
     }
 
+    pub fn default_request<T: Request<'a>>(&self) -> T {
+        T::from_client_metadata(&self.meta)
+    }
+
     pub fn serial_no(mut self, serial_no: Option<&'a str>) -> Self {
         self.meta.serial_no = serial_no;
         self
     }
 
-    fn default_search_request(&self) -> search::Request<'a> {
-        search::Request {
-            app_ver: self.meta.app_ver,
-            device_id: self.meta.device_id,
-            device_nm: self.meta.device_nm,
-            os_ver: self.meta.os_ver,
-            serial_no: self.meta.serial_no,
-            page: 1,
-            ..Default::default()
-        }
-    }
-
     pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<Song> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.artist_id = Some(id);
         req.category_cd = category::ARTIST_NAME.0;
 
@@ -68,7 +61,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn songs_by_title(&self, title: &'a str, match_type: MatchType) -> RequestBuilder<Song> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.song_name = Some(title);
         req.category_cd = category::SONG_NAME.0;
         req.song_match_type = Some(match_type.0);
@@ -85,7 +78,7 @@ impl<'a> Client<'a> {
                            title: &'a str,
                            category: category::CategoryId)
                            -> RequestBuilder<Song> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.program_title = Some(title);
         req.category_cd = category.0;
 
@@ -98,7 +91,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn artists_by_name(&self, name: &'a str, match_type: MatchType) -> RequestBuilder<Artist> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.artist_name = Some(name);
         req.category_cd = category::ARTIST_NAME.0;
         req.artist_match_type = Some(match_type.0);
@@ -112,7 +105,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn series_by_category(&self, category: category::CategoryId) -> RequestBuilder<Series> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.category_cd = category.0;
 
         RequestBuilder {
@@ -124,7 +117,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn new_songs_by_category(&self, category: category::CategoryId) -> RequestBuilder<Song> {
-        let mut req = self.default_search_request();
+        let mut req = self.default_request::<search::Request>();
         req.category_cd = category.0;
 
         RequestBuilder {
