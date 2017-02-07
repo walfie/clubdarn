@@ -1,3 +1,6 @@
+// TODO: Remove this
+#![allow(non_upper_case_globals)]
+
 pub struct CategoryId(pub &'static str);
 
 pub const ARTIST_NAME: CategoryId = CategoryId("010000");

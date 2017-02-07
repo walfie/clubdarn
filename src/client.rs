@@ -7,7 +7,6 @@ use protocol::search;
 use std::marker::PhantomData;
 use std::sync::Arc;
 use std::ops::Deref;
-use std::borrow::Cow;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
@@ -55,27 +54,27 @@ impl<'a> Client<'a> {
     }
 
     pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<Song> {
+        let mut req = self.default_search_request();
+        req.artist_id = Some(id);
+        req.category_cd = category::ARTIST_NAME.0;
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request {
-                artist_id: Some(id),
-                category_cd: category::ARTIST_NAME.0,
-                ..self.default_search_request()
-            },
+            inner: req,
         }
     }
 
     pub fn songs_by_title(&self, title: &'a str, match_type: MatchType) -> RequestBuilder<Song> {
+        let mut req = self.default_search_request();
+        req.song_name = Some(title);
+        req.category_cd = category::SONG_NAME.0;
+        req.song_match_type = Some(match_type.0);
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request {
-                song_name: Some(title),
-                category_cd: category::SONG_NAME.0,
-                song_match_type: Some(match_type.0),
-                ..self.default_search_request()
-            },
+            inner: req,
         }
     }
 
@@ -83,43 +82,49 @@ impl<'a> Client<'a> {
                            title: &'a str,
                            category: category::CategoryId)
                            -> RequestBuilder<Song> {
+        let mut req = self.default_search_request();
+        req.program_title = Some(title);
+        req.category_cd = category.0;
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request {
-                program_title: Some(title),
-                category_cd: category.0,
-                ..self.default_search_request()
-            },
+            inner: req,
         }
     }
 
     pub fn artists_by_name(&self, name: &'a str, match_type: MatchType) -> RequestBuilder<Artist> {
+        let mut req = self.default_search_request();
+        req.artist_name = Some(name);
+        req.category_cd = category::ARTIST_NAME.0;
+        req.artist_match_type = Some(match_type.0);
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request {
-                artist_name: Some(name),
-                category_cd: category::ARTIST_NAME.0,
-                artist_match_type: Some(match_type.0),
-                ..self.default_search_request()
-            },
+            inner: req,
         }
     }
 
     pub fn series_by_category(&self, category: category::CategoryId) -> RequestBuilder<Series> {
+        let mut req = self.default_search_request();
+        req.category_cd = category.0;
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request { category_cd: category.0, ..self.default_search_request() },
+            inner: req,
         }
     }
 
     pub fn new_songs_by_category(&self, category: category::CategoryId) -> RequestBuilder<Song> {
+        let mut req = self.default_search_request();
+        req.category_cd = category.0;
+
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request { category_cd: category.0, ..self.default_search_request() },
+            inner: req,
         }
     }
 }
@@ -134,7 +139,6 @@ pub struct RequestBuilder<'a, T> {
     inner: search::Request<'a>,
     response_type: PhantomData<T>,
 }
-
 impl<'a, T> RequestBuilder<'a, T> {
     pub fn page(&self, page_num: i32) -> Self {
         RequestBuilder {
