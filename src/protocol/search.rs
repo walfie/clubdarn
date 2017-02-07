@@ -14,6 +14,7 @@ fn deserialize_string_as_i32<D: Deserializer>(deserializer: D) -> Result<i32, D:
 }
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
+impl<'a> api::Request for Request<'a> {}
 
 #[derive(Default, Debug, Serialize)]
 pub struct Request<'a> {
@@ -49,7 +50,6 @@ pub struct Request<'a> {
     #[serde(rename = "programTitle", skip_serializing_if = "Option::is_none")]
     pub program_title: Option<&'a str>,
 }
-impl<'a> api::Request for Request<'a> {}
 
 #[derive(Debug, Deserialize)]
 pub struct Response<'a> {

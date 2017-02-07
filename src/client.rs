@@ -42,13 +42,14 @@ impl<'a> Client<'a> {
         self
     }
 
-    pub fn default_search_request(&self) -> search::Request<'a> {
+    fn default_search_request(&self) -> search::Request<'a> {
         search::Request {
             app_ver: self.meta.app_ver,
             device_id: self.meta.device_id,
             device_nm: self.meta.device_nm,
             os_ver: self.meta.os_ver,
             serial_no: self.meta.serial_no,
+            page: 1,
             ..Default::default()
         }
     }
@@ -60,8 +61,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 
@@ -73,8 +75,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 
@@ -88,8 +91,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 
@@ -101,8 +105,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 
@@ -112,8 +117,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 
@@ -123,8 +129,9 @@ impl<'a> Client<'a> {
 
         RequestBuilder {
             http: self.http.clone(),
+            url: search::API_URL,
             response_type: PhantomData,
-            inner: req,
+            underlying: req,
         }
     }
 }
@@ -136,15 +143,17 @@ pub const CONTAINS: MatchType = MatchType("1");
 #[derive(Debug)]
 pub struct RequestBuilder<'a, T> {
     http: Arc<reqwest::Client>,
-    inner: search::Request<'a>,
+    url: &'a str,
+    underlying: search::Request<'a>,
     response_type: PhantomData<T>,
 }
 impl<'a, T> RequestBuilder<'a, T> {
     pub fn page(&self, page_num: i32) -> Self {
         RequestBuilder {
             http: self.http.clone(),
+            url: self.url,
             response_type: self.response_type,
-            inner: search::Request { page: page_num, ..self.inner },
+            underlying: search::Request { page: page_num, ..self.underlying },
         }
     }
 }
@@ -154,18 +163,19 @@ impl<'a, T> RequestBuilder<'a, T>
 {
     // TODO: Handle errors
     pub fn execute(self) -> Response<'a, T> {
-        let json = serde_json::to_string(&self.inner).unwrap();
+        let json = serde_json::to_string(&self.underlying).unwrap();
 
         let result: search::Response = self.http
-            .post(search::API_URL)
+            .post(self.url)
             .body(json)
             .send()
             .unwrap()
             .json()
             .unwrap();
 
-        let body =
-            Paginated::from_search_response(self.inner.page, self.inner.category_cd.into(), result);
+        let body = Paginated::from_search_response(self.underlying.page,
+                                                   self.underlying.category_cd.into(),
+                                                   result);
 
         Response {
             request: self,
@@ -190,7 +200,7 @@ impl<'a, T> Response<'a, T> {
     }
 
     fn change_page(&self, delta: i32) -> Option<RequestBuilder<'a, T>> {
-        let page = self.request.inner.page;
+        let page = self.request.underlying.page;
         let next_page = page + delta;
 
         if next_page > 0 && next_page <= self.body.total_pages {
