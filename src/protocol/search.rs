@@ -1,3 +1,4 @@
+use super::*;
 use serde::{Deserialize, Deserializer, Serializer};
 use serde::de;
 use std::borrow::Cow;
@@ -48,6 +49,7 @@ pub struct Request<'a> {
     #[serde(rename = "programTitle", skip_serializing_if = "Option::is_none")]
     pub program_title: Option<&'a str>,
 }
+impl<'a> api::Request for Request<'a> {}
 
 #[derive(Debug, Deserialize)]
 pub struct Response<'a> {
@@ -58,6 +60,7 @@ pub struct Response<'a> {
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
     pub total_page: i32,
 }
+impl<'a> api::Response for Response<'a> {}
 
 #[derive(Debug, Deserialize)]
 pub struct Item<'a> {
@@ -94,3 +97,4 @@ pub struct Item<'a> {
     #[serde(rename = "titleFirstKana")]
     pub title_first_kana: Cow<'a, str>,
 }
+impl<'a> api::Item for Response<'a> {}

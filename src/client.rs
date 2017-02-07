@@ -7,32 +7,51 @@ use protocol::search;
 use std::marker::PhantomData;
 use std::sync::Arc;
 use std::ops::Deref;
+use std::borrow::Cow;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
-    default_request: search::Request<'a>,
+    meta: ClientMetadata<'a>,
+}
+
+pub struct ClientMetadata<'a> {
+    app_ver: &'a str,
+    device_id: &'a str,
+    device_nm: &'a str,
+    os_ver: &'a str,
+    serial_no: Option<&'a str>,
 }
 
 impl<'a> Client<'a> {
     pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
-        let req = search::Request {
+        let meta = ClientMetadata {
             app_ver: app_ver,
             device_id: device_id,
             device_nm: device_nm,
             os_ver: os_ver,
-            page: 1,
-            ..Default::default()
+            serial_no: None,
         };
 
         Client {
             http: Arc::new(reqwest::Client::new().unwrap()),
-            default_request: req,
+            meta: meta,
         }
     }
 
     pub fn serial_no(mut self, serial_no: Option<&'a str>) -> Self {
-        self.default_request.serial_no = serial_no;
+        self.meta.serial_no = serial_no;
         self
+    }
+
+    pub fn default_search_request(&self) -> search::Request<'a> {
+        search::Request {
+            app_ver: self.meta.app_ver,
+            device_id: self.meta.device_id,
+            device_nm: self.meta.device_nm,
+            os_ver: self.meta.os_ver,
+            serial_no: self.meta.serial_no,
+            ..Default::default()
+        }
     }
 
     pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<Song> {
@@ -42,7 +61,7 @@ impl<'a> Client<'a> {
             inner: search::Request {
                 artist_id: Some(id),
                 category_cd: category::ARTIST_NAME.0,
-                ..self.default_request
+                ..self.default_search_request()
             },
         }
     }
@@ -55,7 +74,7 @@ impl<'a> Client<'a> {
                 song_name: Some(title),
                 category_cd: category::SONG_NAME.0,
                 song_match_type: Some(match_type.0),
-                ..self.default_request
+                ..self.default_search_request()
             },
         }
     }
@@ -70,7 +89,7 @@ impl<'a> Client<'a> {
             inner: search::Request {
                 program_title: Some(title),
                 category_cd: category.0,
-                ..self.default_request
+                ..self.default_search_request()
             },
         }
     }
@@ -83,7 +102,7 @@ impl<'a> Client<'a> {
                 artist_name: Some(name),
                 category_cd: category::ARTIST_NAME.0,
                 artist_match_type: Some(match_type.0),
-                ..self.default_request
+                ..self.default_search_request()
             },
         }
     }
@@ -92,7 +111,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request { category_cd: category.0, ..self.default_request },
+            inner: search::Request { category_cd: category.0, ..self.default_search_request() },
         }
     }
 
@@ -100,7 +119,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: search::Request { category_cd: category.0, ..self.default_request },
+            inner: search::Request { category_cd: category.0, ..self.default_search_request() },
         }
     }
 }
