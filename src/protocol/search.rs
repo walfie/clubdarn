@@ -12,10 +12,10 @@ fn deserialize_string_as_i32<D: Deserializer>(deserializer: D) -> Result<i32, D:
     })
 }
 
-pub const SEARCH_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
+pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
 
 #[derive(Default, Debug, Serialize)]
-pub struct SearchRequest<'a> {
+pub struct Request<'a> {
     #[serde(rename = "appVer")]
     pub app_ver: &'a str,
     #[serde(rename = "deviceId")]
@@ -50,9 +50,9 @@ pub struct SearchRequest<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SearchResultsWrapper<'a> {
+pub struct Response<'a> {
     #[serde(rename = "searchResult")]
-    pub search_result: Vec<SearchResult<'a>>,
+    pub search_result: Vec<Item<'a>>,
     #[serde(rename = "totalCount", deserialize_with = "deserialize_string_as_i32")]
     pub total_count: i32,
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
@@ -60,7 +60,7 @@ pub struct SearchResultsWrapper<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SearchResult<'a> {
+pub struct Item<'a> {
     #[serde(rename = "artistId")]
     pub artist_id: Cow<'a, str>,
     #[serde(rename = "artistName")]

@@ -3,20 +3,19 @@ extern crate reqwest;
 
 use model::*;
 use category;
-use protocol::{SearchRequest, SearchResult, SearchResultsWrapper};
-use protocol;
+use protocol::search;
 use std::marker::PhantomData;
 use std::sync::Arc;
 use std::ops::Deref;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
-    default_request: SearchRequest<'a>,
+    default_request: search::Request<'a>,
 }
 
 impl<'a> Client<'a> {
     pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
-        let req = SearchRequest {
+        let req = search::Request {
             app_ver: app_ver,
             device_id: device_id,
             device_nm: device_nm,
@@ -40,7 +39,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest {
+            inner: search::Request {
                 artist_id: Some(id),
                 category_cd: category::ARTIST_NAME.0,
                 ..self.default_request
@@ -52,7 +51,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest {
+            inner: search::Request {
                 song_name: Some(title),
                 category_cd: category::SONG_NAME.0,
                 song_match_type: Some(match_type.0),
@@ -68,7 +67,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest {
+            inner: search::Request {
                 program_title: Some(title),
                 category_cd: category.0,
                 ..self.default_request
@@ -80,7 +79,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest {
+            inner: search::Request {
                 artist_name: Some(name),
                 category_cd: category::ARTIST_NAME.0,
                 artist_match_type: Some(match_type.0),
@@ -93,7 +92,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest { category_cd: category.0, ..self.default_request },
+            inner: search::Request { category_cd: category.0, ..self.default_request },
         }
     }
 
@@ -101,7 +100,7 @@ impl<'a> Client<'a> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: PhantomData,
-            inner: SearchRequest { category_cd: category.0, ..self.default_request },
+            inner: search::Request { category_cd: category.0, ..self.default_request },
         }
     }
 }
@@ -113,7 +112,7 @@ pub const CONTAINS: MatchType = MatchType("1");
 #[derive(Debug)]
 pub struct RequestBuilder<'a, T> {
     http: Arc<reqwest::Client>,
-    inner: SearchRequest<'a>,
+    inner: search::Request<'a>,
     response_type: PhantomData<T>,
 }
 
@@ -122,20 +121,20 @@ impl<'a, T> RequestBuilder<'a, T> {
         RequestBuilder {
             http: self.http.clone(),
             response_type: self.response_type,
-            inner: SearchRequest { page: page_num, ..self.inner },
+            inner: search::Request { page: page_num, ..self.inner },
         }
     }
 }
 
 impl<'a, T> RequestBuilder<'a, T>
-    where T: From<SearchResult<'a>>
+    where T: SearchModel<'a>
 {
     // TODO: Handle errors
     pub fn execute(self) -> Response<'a, T> {
         let json = serde_json::to_string(&self.inner).unwrap();
 
-        let result: SearchResultsWrapper = self.http
-            .post(protocol::SEARCH_URL)
+        let result: search::Response = self.http
+            .post(search::API_URL)
             .body(json)
             .send()
             .unwrap()
@@ -143,7 +142,7 @@ impl<'a, T> RequestBuilder<'a, T>
             .unwrap();
 
         let body =
-            Paginated::from_results_wrapper(self.inner.page, self.inner.category_cd.into(), result);
+            Paginated::from_search_response(self.inner.page, self.inner.category_cd.into(), result);
 
         Response {
             request: self,

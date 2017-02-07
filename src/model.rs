@@ -1,6 +1,11 @@
-use protocol::{SearchResult, SearchResultsWrapper};
+use protocol::search;
 use std::borrow::Cow;
 use std::convert::From;
+
+pub trait Model {}
+pub trait SearchModel<'a>: From<search::Item<'a>> {}
+impl<'a, T> Model for T where T: SearchModel<'a> {}
+impl<'a, T> SearchModel<'a> for T where T: From<search::Item<'a>> {}
 
 #[derive(Debug, Serialize)]
 pub struct Paginated<'a, T> {
@@ -34,11 +39,11 @@ pub struct Series<'a> {
 }
 
 impl<'a, T> Paginated<'a, T>
-    where T: From<SearchResult<'a>>
+    where T: SearchModel<'a>
 {
-    pub fn from_results_wrapper(page: i32,
+    pub fn from_search_response(page: i32,
                                 category_id: Cow<'a, str>,
-                                wrapper: SearchResultsWrapper<'a>)
+                                wrapper: search::Response<'a>)
                                 -> Self {
         let items: Vec<T> = wrapper.search_result
             .into_iter()
@@ -63,8 +68,8 @@ impl<'a, T> Paginated<'a, T>
     }
 }
 
-impl<'a> From<SearchResult<'a>> for Artist<'a> {
-    fn from(res: SearchResult<'a>) -> Self {
+impl<'a> From<search::Item<'a>> for Artist<'a> {
+    fn from(res: search::Item<'a>) -> Self {
         Artist {
             id: res.artist_id,
             name: res.artist_name,
@@ -72,8 +77,8 @@ impl<'a> From<SearchResult<'a>> for Artist<'a> {
     }
 }
 
-impl<'a> From<SearchResult<'a>> for Song<'a> {
-    fn from(res: SearchResult<'a>) -> Self {
+impl<'a> From<search::Item<'a>> for Song<'a> {
+    fn from(res: search::Item<'a>) -> Self {
         let series = if res.program_title.is_empty() {
             None
         } else {
@@ -94,8 +99,8 @@ impl<'a> From<SearchResult<'a>> for Song<'a> {
     }
 }
 
-impl<'a> From<SearchResult<'a>> for Series<'a> {
-    fn from(res: SearchResult<'a>) -> Self {
+impl<'a> From<search::Item<'a>> for Series<'a> {
+    fn from(res: search::Item<'a>) -> Self {
         Series {
             title: res.program_title,
             first_kana: res.title_first_kana,
