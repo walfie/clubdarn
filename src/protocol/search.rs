@@ -5,29 +5,6 @@ use super::serialize_util::*;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
 
-impl<'a> api::Request<'a> for Request<'a> {
-    type ResponseType = Response<'a>;
-    fn url() -> &'a str {
-        API_URL
-    }
-
-    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self {
-        Request {
-            app_ver: meta.app_ver,
-            device_id: meta.device_id,
-            device_nm: meta.device_nm,
-            os_ver: meta.os_ver,
-            serial_no: meta.serial_no,
-            page: 1,
-            ..Default::default()
-        }
-    }
-}
-impl<'a> api::Response for Response<'a> {
-    type ItemType = Item<'a>;
-}
-impl<'a> api::Item for Item<'a> {}
-
 #[derive(Default, Debug, Serialize)]
 pub struct Request<'a> {
     #[serde(rename = "appVer")]
@@ -63,6 +40,37 @@ pub struct Request<'a> {
     pub program_title: Option<&'a str>,
 }
 
+impl<'a> api::Request<'a> for Request<'a> {
+    type ResponseType = Response<'a>;
+    fn url() -> &'a str {
+        API_URL
+    }
+
+    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self {
+        Request {
+            app_ver: meta.app_ver,
+            device_id: meta.device_id,
+            device_nm: meta.device_nm,
+            os_ver: meta.os_ver,
+            serial_no: meta.serial_no,
+            page: 1,
+            ..Default::default()
+        }
+    }
+
+    fn category(&self) -> Cow<'a, str> {
+        self.category_cd.into()
+    }
+
+    fn get_page(&self) -> i32 {
+        self.page
+    }
+
+    fn page(&self, page_num: i32) -> Self {
+        Request { page: page_num, ..Default::default() }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct Response<'a> {
     #[serde(rename = "searchResult")]
@@ -71,6 +79,26 @@ pub struct Response<'a> {
     pub total_count: i32,
     #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
     pub total_page: i32,
+}
+
+impl<'a> api::Response<'a> for Response<'a> {
+    type ItemType = Item<'a>;
+
+    fn items(self) -> Vec<Item<'a>> {
+        self.search_result
+    }
+
+    fn total_pages(&self) -> i32 {
+        if (self.search_result.len() as i32) >= self.total_count {
+            1
+        } else {
+            self.total_page
+        }
+    }
+
+    fn total_items(&self) -> i32 {
+        self.total_count
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -108,4 +136,3 @@ pub struct Item<'a> {
     #[serde(rename = "titleFirstKana")]
     pub title_first_kana: Cow<'a, str>,
 }
-impl<'a> api::Item for Response<'a> {}

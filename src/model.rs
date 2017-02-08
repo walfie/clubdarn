@@ -2,20 +2,6 @@ use protocol::search;
 use std::borrow::Cow;
 use std::convert::From;
 
-pub trait Model {}
-pub trait SearchModel<'a>: From<search::Item<'a>> {}
-impl<'a, T> Model for T where T: SearchModel<'a> {}
-impl<'a, T> SearchModel<'a> for T where T: From<search::Item<'a>> {}
-
-#[derive(Debug, Serialize)]
-pub struct Paginated<'a, T> {
-    pub page: i32,
-    pub category_id: Cow<'a, str>,
-    pub total_count: i32,
-    pub total_pages: i32,
-    pub items: Vec<T>,
-}
-
 #[derive(Debug, Serialize)]
 pub struct Artist<'a> {
     pub id: Cow<'a, str>,
@@ -38,34 +24,13 @@ pub struct Series<'a> {
     pub first_kana: Cow<'a, str>,
 }
 
-impl<'a, T> Paginated<'a, T>
-    where T: SearchModel<'a>
-{
-    pub fn from_search_response(page: i32,
-                                category_id: Cow<'a, str>,
-                                wrapper: search::Response<'a>)
-                                -> Self {
-        let items: Vec<T> = wrapper.search_result
-            .into_iter()
-            .map(T::from)
-            .collect();
-
-        // Sometimes the API says there are multiple pages, but puts all
-        // the results on a single page, so we need to manually check.
-        let total_pages = if (items.len() as i32) >= wrapper.total_count {
-            1
-        } else {
-            wrapper.total_count
-        };
-
-        Paginated {
-            page: page,
-            category_id: category_id,
-            total_count: wrapper.total_count,
-            total_pages: total_pages,
-            items: items,
-        }
-    }
+#[derive(Debug, Serialize)]
+pub struct Paginated<'a, T: 'a> {
+    pub page: i32,
+    pub category_id: Cow<'a, str>,
+    pub total_items: i32,
+    pub total_pages: i32,
+    pub items: Vec<T>,
 }
 
 impl<'a> From<search::Item<'a>> for Artist<'a> {
