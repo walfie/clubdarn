@@ -14,11 +14,16 @@ fn pretty<T: Serialize>(x: &T) -> String {
 fn main() {
     let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
 
+    /*
     let songs = client.songs_by_title("passion flower", client::STARTS_WITH).send();
     println!("{}", pretty(&songs.body));
 
     let artists = client.artists_by_name("AIKATSU", client::STARTS_WITH).send();
     println!("{}", pretty(&artists.body));
+    */
+
+    let song_id = client.songs_by_ids(vec!["369073"]).send();
+    println!("{}", pretty(&song_id.body));
 
     /*
     // Kinda slow

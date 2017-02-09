@@ -1,4 +1,4 @@
-use protocol::search;
+use protocol::{exist, search};
 use std::borrow::Cow;
 use std::convert::From;
 
@@ -27,7 +27,7 @@ pub struct Series<'a> {
 #[derive(Debug, Serialize)]
 pub struct Paginated<'a, T: 'a> {
     pub page: i32,
-    pub category_id: Cow<'a, str>,
+    pub category_id: Option<Cow<'a, str>>,
     pub total_items: i32,
     pub total_pages: i32,
     pub items: Vec<T>,
@@ -56,6 +56,22 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
             date_added: res.dist_start, // TODO: DateTime
             lyrics: res.first_bars,
             series: series,
+            artist: Artist {
+                id: res.artist_id,
+                name: res.artist_name,
+            },
+        }
+    }
+}
+
+impl<'a> From<exist::Item<'a>> for Song<'a> {
+    fn from(res: exist::Item<'a>) -> Self {
+        Song {
+            id: res.req_no,
+            title: res.song_name,
+            date_added: res.dist_start, // TODO: DateTime
+            lyrics: res.first_bars,
+            series: None,
             artist: Artist {
                 id: res.artist_id,
                 name: res.artist_name,

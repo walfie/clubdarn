@@ -3,8 +3,7 @@ extern crate reqwest;
 
 use model::*;
 use category;
-use protocol::api;
-use protocol::search;
+use protocol::{api, search, exist};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -114,7 +113,23 @@ impl<'a> Client<'a> {
 
         self.request_builder(req)
     }
+
+    pub fn songs_by_ids(&self, ids: Vec<&'a str>) -> RequestBuilder<exist::Request, Song> {
+        let mut req = self.default_request::<exist::Request>();
+        req.is_exist = ids.iter().map(|id| SongLookup::ById(id).into()).collect();
+
+        self.request_builder(req)
+    }
 }
+
+pub enum SongLookup<'a> {
+    ByTitleAndArtist {
+        title: &'a str,
+        artist_name: &'a str,
+    },
+    ById(&'a str),
+}
+
 
 pub struct MatchType(pub &'static str);
 pub const STARTS_WITH: MatchType = MatchType("0");
@@ -160,13 +175,17 @@ impl<'a, R, I> RequestBuilder<'a, R, I>
             .json()
             .unwrap();
 
-        let body = Paginated {
+        // Doing this weird thing because `items()` consumes `response`
+        let total_items = response.total_items();
+        let mut body = Paginated {
             page: self.request.get_page(),
             category_id: self.request.category(),
-            total_items: response.total_items(),
+            total_items: 0,
             total_pages: response.total_pages(),
             items: response.items().into_iter().map(I::from).collect(),
         };
+
+        body.total_items = total_items.unwrap_or(body.items.len() as i32);
 
         ResponseWrapper {
             request: self,
