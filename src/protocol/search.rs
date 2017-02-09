@@ -1,7 +1,7 @@
 use client::ClientMetadata;
 use std::borrow::Cow;
 use super::*;
-use super::serialize_util::*;
+use super::super::util::*;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
 

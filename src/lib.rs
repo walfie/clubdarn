@@ -7,7 +7,8 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-pub mod protocol;
+mod protocol;
 pub mod category;
 pub mod client;
 pub mod model;
+mod util;
