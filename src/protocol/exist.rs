@@ -1,4 +1,4 @@
-use client::{ClientMetadata, SongLookup};
+use client::ClientMetadata;
 use std::borrow::Cow;
 use super::*;
 
@@ -31,23 +31,20 @@ pub struct RequestItem<'a> {
     req_no: Option<&'a str>,
 }
 
-impl<'a> From<SongLookup<'a>> for RequestItem<'a> {
-    fn from(lookup: SongLookup<'a>) -> Self {
-        match lookup {
-            SongLookup::ByTitleAndArtist { title, artist_name } => {
-                RequestItem {
-                    song_name: Some(title),
-                    artist_name: Some(artist_name),
-                    req_no: None,
-                }
-            }
-            SongLookup::ById(id) => {
-                RequestItem {
-                    song_name: None,
-                    artist_name: None,
-                    req_no: Some(id),
-                }
-            }
+impl<'a> RequestItem<'a> {
+    pub fn from_id(id: &'a str) -> Self {
+        RequestItem {
+            song_name: None,
+            artist_name: None,
+            req_no: Some(id),
+        }
+    }
+
+    pub fn from_title_and_artist(title: &'a str, artist: &'a str) -> Self {
+        RequestItem {
+            song_name: Some(title),
+            artist_name: Some(artist),
+            req_no: None,
         }
     }
 }

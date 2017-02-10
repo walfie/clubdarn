@@ -116,20 +116,27 @@ impl<'a> Client<'a> {
 
     pub fn songs_by_ids(&self, ids: Vec<&'a str>) -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
-        req.is_exist = ids.iter().map(|id| SongLookup::ById(id).into()).collect();
+        req.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(id)).collect();
+
+        self.request_builder(req)
+    }
+
+    pub fn songs_by_title_and_artist(&self,
+                                     titles_and_artists: Vec<TitleAndArtist<'a>>)
+                                     -> RequestBuilder<exist::Request, Song> {
+        let mut req = self.default_request::<exist::Request>();
+        req.is_exist = titles_and_artists.iter()
+            .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
+            .collect();
 
         self.request_builder(req)
     }
 }
 
-pub enum SongLookup<'a> {
-    ByTitleAndArtist {
-        title: &'a str,
-        artist_name: &'a str,
-    },
-    ById(&'a str),
+pub struct TitleAndArtist<'a> {
+    pub title: &'a str,
+    pub artist: &'a str,
 }
-
 
 pub struct MatchType(pub &'static str);
 pub const STARTS_WITH: MatchType = MatchType("0");

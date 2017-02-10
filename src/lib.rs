@@ -3,12 +3,11 @@
 
 #[macro_use]
 extern crate serde_derive;
-
 extern crate serde;
 extern crate serde_json;
 
 mod protocol;
 pub mod category;
 pub mod client;
-pub mod model;
+pub use model::{Artist, Song, Series, Paginated};
 mod util;

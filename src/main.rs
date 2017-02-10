@@ -25,6 +25,13 @@ fn main() {
     let song_id = client.songs_by_ids(vec!["369073"]).send();
     println!("{}", pretty(&song_id.body));
 
+    let lookup = client::TitleAndArtist {
+        title: "wake up my music",
+        artist: "りさ、えいみ",
+    };
+    let x = client.songs_by_title_and_artist(vec![lookup]).send();
+    println!("{}", pretty(&x.body));
+
     /*
     // Kinda slow
     let new_anime_songs = client.new_songs_by_category(protocol::categories::NEW_SONG_ALL_SONG)
