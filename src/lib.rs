@@ -7,7 +7,10 @@ extern crate serde;
 extern crate serde_json;
 
 mod protocol;
-pub mod category;
-pub mod client;
-pub use model::{Artist, Song, Series, Paginated};
+mod model;
 mod util;
+mod client;
+
+pub mod category;
+pub use client::{Client, MatchType, RequestBuilder, TitleAndArtist};
+pub use model::{Artist, Song, Series, Paginated};

@@ -12,27 +12,25 @@ fn pretty<T: Serialize>(x: &T) -> String {
 }
 
 fn main() {
-    let client = client::Client::new("1.2.0", "test", "hello", "4.4.4");
+    let client = Client::new("1.2.0", "test", "hello", "4.4.4");
 
-    /*
-    let songs = client.songs_by_title("passion flower", client::STARTS_WITH).send();
+    let songs = client.songs_by_title("passion flower", MatchType::StartsWith).send();
     println!("{}", pretty(&songs.body));
 
-    let artists = client.artists_by_name("AIKATSU", client::STARTS_WITH).send();
+    /*
+    let artists = client.artists_by_name("AIKATSU", MatchType::StartsWith).send();
     println!("{}", pretty(&artists.body));
-    */
 
     let song_id = client.songs_by_ids(vec!["369073"]).send();
     println!("{}", pretty(&song_id.body));
 
-    let lookup = client::TitleAndArtist {
+    let lookup = TitleAndArtist {
         title: "wake up my music",
         artist: "りさ、えいみ",
     };
     let x = client.songs_by_title_and_artist(vec![lookup]).send();
     println!("{}", pretty(&x.body));
 
-    /*
     // Kinda slow
     let new_anime_songs = client.new_songs_by_category(protocol::categories::NEW_SONG_ALL_SONG)
         .execute();

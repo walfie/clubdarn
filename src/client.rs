@@ -68,7 +68,7 @@ impl<'a> Client<'a> {
         let mut req = self.default_request::<search::Request>();
         req.song_name = Some(title);
         req.category_cd = category::SONG_NAME.0;
-        req.song_match_type = Some(match_type.0);
+        req.song_match_type = Some(match_type.into());
 
         self.request_builder(req)
     }
@@ -91,7 +91,7 @@ impl<'a> Client<'a> {
         let mut req = self.default_request::<search::Request>();
         req.artist_name = Some(name);
         req.category_cd = category::ARTIST_NAME.0;
-        req.artist_match_type = Some(match_type.0);
+        req.artist_match_type = Some(match_type.into());
 
         self.request_builder(req)
     }
@@ -133,14 +133,25 @@ impl<'a> Client<'a> {
     }
 }
 
+#[derive(Debug, Serialize)]
 pub struct TitleAndArtist<'a> {
     pub title: &'a str,
     pub artist: &'a str,
 }
 
-pub struct MatchType(pub &'static str);
-pub const STARTS_WITH: MatchType = MatchType("0");
-pub const CONTAINS: MatchType = MatchType("1");
+pub enum MatchType {
+    StartsWith,
+    Contains,
+}
+
+impl From<MatchType> for &'static str {
+    fn from(mt: MatchType) -> Self {
+        match mt {
+            MatchType::StartsWith => "0",
+            MatchType::Contains => "1",
+        }
+    }
+}
 
 pub struct RequestBuilder<'a, RequestT, ResponseItemT: 'a> {
     http: Arc<reqwest::Client>,
