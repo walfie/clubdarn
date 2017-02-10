@@ -58,6 +58,16 @@ impl<'a> api::Request<'a> for Request<'a> {
         }
     }
 
+    fn set_serial_no(&mut self, serial_no: &'a str) -> &Self {
+        self.serial_no = Some(serial_no);
+        self
+    }
+
+    fn unset_serial_no(&mut self) -> &Self {
+        self.serial_no = None;
+        self
+    }
+
     fn category(&self) -> Option<Cow<'a, str>> {
         Some(self.category_cd.into())
     }
@@ -66,9 +76,9 @@ impl<'a> api::Request<'a> for Request<'a> {
         self.page
     }
 
-    fn page(&self, page_num: i32) -> Self {
-        // TODO: This is wrong
-        Request { page: page_num, ..Default::default() }
+    fn set_page(&mut self, page_num: i32) -> &Self {
+        self.page = page_num;
+        self
     }
 }
 

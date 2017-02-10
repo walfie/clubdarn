@@ -33,6 +33,24 @@ pub struct Paginated<'a, T: 'a> {
     pub items: Vec<T>,
 }
 
+impl<'a, T> Paginated<'a, T> {
+    pub fn next_page(&self) -> Option<i32> {
+        if self.page < self.total_pages {
+            Some(self.page + 1)
+        } else {
+            None
+        }
+    }
+
+    pub fn prev_page(&self) -> Option<i32> {
+        if self.page > 1 {
+            Some(self.page - 1)
+        } else {
+            None
+        }
+    }
+}
+
 impl<'a> From<search::Item<'a>> for Artist<'a> {
     fn from(res: search::Item<'a>) -> Self {
         Artist {

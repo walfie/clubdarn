@@ -1,12 +1,18 @@
 extern crate serde_json;
 extern crate reqwest;
 
+use std::marker::PhantomData;
+use std::sync::Arc;
+
 use model::*;
 use category;
 use protocol::{api, search, exist};
-use std::marker::PhantomData;
-use std::sync::Arc;
 use request_builder::*;
+
+const DEFAULT_APP_VER: &'static str = "1.2.0"; // Denmoku Mini app version
+const DEFAULT_DEVICE_ID: &'static str = "";
+const DEFAULT_DEVICE_NM: &'static str = env!("CARGO_PKG_NAME");
+const DEFAULT_OS_VER: &'static str = env!("CARGO_PKG_VERSION");
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
@@ -35,6 +41,13 @@ impl<'a> Client<'a> {
             http: Arc::new(reqwest::Client::new().unwrap()),
             meta: meta,
         }
+    }
+
+    pub fn default() -> Self {
+        Self::new(DEFAULT_APP_VER,
+                  DEFAULT_DEVICE_ID,
+                  DEFAULT_DEVICE_NM,
+                  DEFAULT_OS_VER)
     }
 
     fn default_request<T: api::Request<'a>>(&self) -> T {
