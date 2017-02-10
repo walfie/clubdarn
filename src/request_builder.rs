@@ -21,6 +21,11 @@ impl<'a, R, I> RequestBuilder<'a, R, I>
         self.request.set_page(page_num);
         self
     }
+
+    pub fn set_serial_no(&mut self, serial_no: &'a str) -> &Self {
+        self.request.set_serial_no(serial_no);
+        self
+    }
 }
 
 impl<'a, R, I> RequestBuilder<'a, R, I>
