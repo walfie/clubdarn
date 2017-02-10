@@ -94,9 +94,7 @@ impl<'a> api::Response<'a> for Response<'a> {
     type ItemType = Item<'a>;
 
     fn items(self) -> Vec<Item<'a>> {
-        // figure out why below isn't working
-        //self.is_exist.into_iter().filter(|item| !item.req_no.is_empty()).collect()
-        self.is_exist
+        self.is_exist.into_iter().filter(|item| !item.req_no.is_empty()).collect()
     }
 
     fn total_pages(&self) -> i32 {
