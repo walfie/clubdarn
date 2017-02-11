@@ -13,10 +13,13 @@ fn pretty<T: Serialize>(t: &T) -> String {
 fn main() {
     let client = Client::new("1.2.0", "test", "hello", "4.4.4");
 
-    let songs = client.songs_by_title("passion flower", MatchType::StartsWith).send();
+    let songs = client.similar_songs(372915).send();
     println!("{}", pretty(&songs));
 
     /*
+    let songs = client.songs_by_title("passion flower", MatchType::StartsWith).send();
+    println!("{}", pretty(&songs));
+
     let artists = client.artists_by_name("AIKATSU", MatchType::StartsWith).send();
     println!("{}", pretty(&artists));
 

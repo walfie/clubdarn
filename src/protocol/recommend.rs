@@ -15,7 +15,7 @@ pub struct Request<'a> {
     #[serde(rename = "format")]
     format: &'a str,
     #[serde(rename = "requestNoList")]
-    pub request_no_list: &'a str,
+    pub request_no_list: Cow<'a, str>,
     #[serde(rename = "serial")]
     pub serial: Option<&'a str>,
 }
@@ -38,7 +38,7 @@ impl<'a> api::Request<'a> for Request<'a> {
             contract_id: 1,
             comp_auth_key: "2/Qb9R@8s*",
             format: "json",
-            request_no_list: "",
+            request_no_list: "".into(),
             serial: meta.serial_no,
         }
     }

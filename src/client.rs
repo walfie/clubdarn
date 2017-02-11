@@ -145,6 +145,18 @@ impl<'a> Client<'a> {
 
         self.request_builder(req)
     }
+
+    pub fn similar_songs(&self, song_id: i32) -> RequestBuilder<recommend::Request, Song> {
+        let mut req = self.default_request::<recommend::Request>();
+        let mut song_id_str = song_id.to_string();
+        if (song_id_str.len() as i32) > 4 {
+            song_id_str.insert(4, '-');
+        }
+
+        req.request_no_list = song_id_str.into();
+
+        self.request_builder(req)
+    }
 }
 
 #[derive(Debug, Serialize)]
