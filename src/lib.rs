@@ -14,4 +14,5 @@ mod client;
 
 pub mod category;
 pub use client::{Client, MatchType, TitleAndArtist};
+pub use request_builder::RequestBuilder;
 pub use model::{Artist, ArtistId, Song, SongId, Series, Paginated};

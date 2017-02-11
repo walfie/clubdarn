@@ -18,11 +18,11 @@ pub struct RequestBuilder<'a, RequestT, ResponseItemT: 'a> {
 }
 
 impl<'a, I> RequestBuilder<'a, &'a client::Metadata<'a>, I> {
-    fn default_request<R>(self) -> RequestBuilder<'a, R, I>
+    fn default_request<R>(&self) -> RequestBuilder<'a, R, I>
         where R: api::Request<'a>
     {
         RequestBuilder {
-            http: self.http,
+            http: self.http.clone(),
             request: R::from_client_metadata(self.request),
             response_item_type: PhantomData,
         }
@@ -30,7 +30,7 @@ impl<'a, I> RequestBuilder<'a, &'a client::Metadata<'a>, I> {
 }
 
 impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
-    pub fn by_title(self,
+    pub fn by_title(&self,
                     title: &'a str,
                     match_type: MatchType)
                     -> RequestBuilder<search::Request, Song> {
@@ -41,22 +41,22 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         req
     }
 
-    pub fn starting_with(self, title: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn starting_with(&self, title: &'a str) -> RequestBuilder<search::Request, Song> {
         self.by_title(title, MatchType::StartsWith)
     }
 
-    pub fn containing(self, title: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn containing(&self, title: &'a str) -> RequestBuilder<search::Request, Song> {
         self.by_title(title, MatchType::Contains)
     }
 
-    pub fn by_artist_id(self, id: i32) -> RequestBuilder<'a, search::Request<'a>, Song<'a>> {
+    pub fn by_artist_id(&self, id: i32) -> RequestBuilder<'a, search::Request<'a>, Song<'a>> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_id = Some(id);
         req.request.category_cd = ::category::ARTIST_NAME.0;
         req
     }
 
-    pub fn by_series(self,
+    pub fn by_series(&self,
                      title: &'a str,
                      category_id: &'a str)
                      -> RequestBuilder<'a, search::Request<'a>, Song<'a>> {
@@ -66,25 +66,25 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         req
     }
 
-    pub fn recent(self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn recent(&self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.category_cd = category_id;
         req
     }
 
-    pub fn by_ids(self, ids: Vec<i32>) -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
+    pub fn by_ids(&self, ids: Vec<i32>) -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
         req
     }
 
-    pub fn by_id(self, id: i32) -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
+    pub fn by_id(&self, id: i32) -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
         self.by_ids(vec![id])
     }
 
-    pub fn by_titles_and_artists(self,
+    pub fn by_titles_and_artists(&self,
                                  titles_and_artists: Vec<client::TitleAndArtist<'a>>)
-                                 -> RequestBuilder<exist::Request, Song> {
+                                 -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
             .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
@@ -93,7 +93,7 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         req
     }
 
-    pub fn by_title_and_artist(self,
+    pub fn by_title_and_artist(&self,
                                title: &'a str,
                                artist: &'a str)
                                -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
@@ -104,7 +104,7 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         self.by_titles_and_artists(vec![info])
     }
 
-    pub fn similar_to(self, song_id: i32) -> RequestBuilder<'a, recommend::Request<'a>, Song<'a>> {
+    pub fn similar_to(&self, song_id: i32) -> RequestBuilder<'a, recommend::Request<'a>, Song<'a>> {
         let mut req = self.default_request::<recommend::Request>();
         let mut song_id_str = song_id.to_string();
 
@@ -119,7 +119,7 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
 }
 
 impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Artist<'a>> {
-    pub fn by_name(self,
+    pub fn by_name(&self,
                    name: &'a str,
                    match_type: MatchType)
                    -> RequestBuilder<search::Request, Artist> {
@@ -130,17 +130,17 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Artist<'a>> {
         req
     }
 
-    pub fn starting_with(self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
+    pub fn starting_with(&self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
         self.by_name(name, MatchType::StartsWith)
     }
 
-    pub fn containing(self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
+    pub fn containing(&self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
         self.by_name(name, MatchType::Contains)
     }
 }
 
 impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Series<'a>> {
-    pub fn by_category(self, category_id: &'a str) -> RequestBuilder<search::Request, Series> {
+    pub fn by_category(&self, category_id: &'a str) -> RequestBuilder<search::Request, Series> {
         let mut req = self.default_request::<search::Request>();
         req.request.category_cd = category_id;
         req
