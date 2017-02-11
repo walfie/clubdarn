@@ -18,13 +18,13 @@ pub struct Request<'a> {
     #[serde(rename = "serialNo", skip_serializing_if = "Option::is_none")]
     pub serial_no: Option<&'a str>,
 
-    #[serde(rename = "page", serialize_with = "serialize_i32_as_str")]
+    #[serde(rename = "page")]
     pub page: i32,
     #[serde(rename = "categoryCd")]
     pub category_cd: &'a str,
 
     #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
-    pub artist_id: Option<&'a str>,
+    pub artist_id: Option<i32>,
 
     #[serde(rename = "artistName", skip_serializing_if = "Option::is_none")]
     pub artist_name: Option<&'a str>,

@@ -67,7 +67,7 @@ impl<'a> Client<'a> {
         self
     }
 
-    pub fn songs_by_artist_id(&self, id: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn songs_by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.artist_id = Some(id);
         req.category_cd = category::ARTIST_NAME.0;
@@ -128,9 +128,9 @@ impl<'a> Client<'a> {
         self.request_builder(req)
     }
 
-    pub fn songs_by_ids(&self, ids: Vec<&'a str>) -> RequestBuilder<exist::Request, Song> {
+    pub fn songs_by_ids(&self, ids: Vec<i32>) -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
-        req.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(id)).collect();
+        req.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
 
         self.request_builder(req)
     }

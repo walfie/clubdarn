@@ -28,11 +28,11 @@ pub struct RequestItem<'a> {
     #[serde(rename = "songName", skip_serializing_if = "Option::is_none")]
     song_name: Option<&'a str>,
     #[serde(rename = "reqNo", skip_serializing_if = "Option::is_none")]
-    req_no: Option<&'a str>,
+    req_no: Option<i32>,
 }
 
 impl<'a> RequestItem<'a> {
-    pub fn from_id(id: &'a str) -> Self {
+    pub fn from_id(id: i32) -> Self {
         RequestItem {
             song_name: None,
             artist_name: None,
