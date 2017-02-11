@@ -2,15 +2,20 @@ use protocol::{exist, recommend, search};
 use std::borrow::Cow;
 use std::convert::From;
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Serialize)]
+pub struct SongId(i32);
+#[derive(Debug, Serialize)]
+pub struct ArtistId(i32);
+
+#[derive(Debug, Serialize)]
 pub struct Artist<'a> {
-    pub id: i32,
+    pub id: ArtistId,
     pub name: Cow<'a, str>,
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Song<'a> {
-    pub id: i32,
+    pub id: SongId,
     pub title: Cow<'a, str>,
     pub artist: Artist<'a>,
     #[serde(rename = "dateAdded", skip_serializing_if = "Option::is_none")]
@@ -21,7 +26,7 @@ pub struct Song<'a> {
     pub series: Option<Cow<'a, str>>,
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Series<'a> {
     pub title: Cow<'a, str>,
     #[serde(rename = "firstKana")]
@@ -58,14 +63,23 @@ impl<'a, T> Paginated<'a, T> {
     }
 }
 
-fn parse_str_id(id: Cow<str>) -> i32 {
-    id.parse().unwrap_or(-1)
+impl<'a> From<Cow<'a, str>> for SongId {
+    fn from(s: Cow<'a, str>) -> Self {
+        // TODO: `replacen` stabilizes in Rust 1.16.0
+        SongId(s.replace("-", "").parse().unwrap_or(-1))
+    }
+}
+
+impl<'a> From<Cow<'a, str>> for ArtistId {
+    fn from(s: Cow<'a, str>) -> Self {
+        ArtistId(s.parse().unwrap_or(-1))
+    }
 }
 
 impl<'a> From<search::Item<'a>> for Artist<'a> {
     fn from(res: search::Item<'a>) -> Self {
         Artist {
-            id: parse_str_id(res.artist_id),
+            id: res.artist_id.into(),
             name: res.artist_name,
         }
     }
@@ -80,13 +94,13 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
         };
 
         Song {
-            id: parse_str_id(res.req_no),
+            id: res.req_no.into(),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: series,
             artist: Artist {
-                id: parse_str_id(res.artist_id),
+                id: res.artist_id.into(),
                 name: res.artist_name,
             },
         }
@@ -96,13 +110,13 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
 impl<'a> From<exist::Item<'a>> for Song<'a> {
     fn from(res: exist::Item<'a>) -> Self {
         Song {
-            id: parse_str_id(res.req_no),
+            id: res.req_no.into(),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: None,
             artist: Artist {
-                id: parse_str_id(res.artist_id),
+                id: res.artist_id.into(),
                 name: res.artist_name,
             },
         }
@@ -112,14 +126,13 @@ impl<'a> From<exist::Item<'a>> for Song<'a> {
 impl<'a> From<recommend::Item<'a>> for Song<'a> {
     fn from(res: recommend::Item<'a>) -> Self {
         Song {
-            // TODO: `replacen` stabilizes in Rust 1.16.0
-            id: parse_str_id(res.request_no.replace("-", "").into()),
+            id: res.request_no.into(),
             title: res.denmoku_contents,
             date_added: None,
             lyrics: None,
             series: None,
             artist: Artist {
-                id: parse_str_id(res.dam_artist_code),
+                id: res.dam_artist_code.into(),
                 name: res.artist,
             },
         }
