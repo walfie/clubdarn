@@ -4,13 +4,13 @@ use std::convert::From;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Artist<'a> {
-    pub id: Cow<'a, str>,
+    pub id: i32,
     pub name: Cow<'a, str>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Song<'a> {
-    pub id: Cow<'a, str>,
+    pub id: i32,
     pub title: Cow<'a, str>,
     pub artist: Artist<'a>,
     pub date_added: Option<Cow<'a, str>>,
@@ -51,10 +51,14 @@ impl<'a, T> Paginated<'a, T> {
     }
 }
 
+fn parse_str_id(id: Cow<str>) -> i32 {
+    id.parse().unwrap_or(-1)
+}
+
 impl<'a> From<search::Item<'a>> for Artist<'a> {
     fn from(res: search::Item<'a>) -> Self {
         Artist {
-            id: res.artist_id,
+            id: parse_str_id(res.artist_id),
             name: res.artist_name,
         }
     }
@@ -69,13 +73,13 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
         };
 
         Song {
-            id: res.req_no,
+            id: parse_str_id(res.req_no),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: series,
             artist: Artist {
-                id: res.artist_id,
+                id: parse_str_id(res.artist_id),
                 name: res.artist_name,
             },
         }
@@ -85,13 +89,13 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
 impl<'a> From<exist::Item<'a>> for Song<'a> {
     fn from(res: exist::Item<'a>) -> Self {
         Song {
-            id: res.req_no,
+            id: parse_str_id(res.req_no),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: None,
             artist: Artist {
-                id: res.artist_id,
+                id: parse_str_id(res.artist_id),
                 name: res.artist_name,
             },
         }
@@ -102,13 +106,13 @@ impl<'a> From<recommend::Item<'a>> for Song<'a> {
     fn from(res: recommend::Item<'a>) -> Self {
         Song {
             // TODO: `replacen` stabilizes in Rust 1.16.0
-            id: res.request_no.replace("-", "").into(),
+            id: parse_str_id(res.request_no.replace("-", "").into()),
             title: res.denmoku_contents,
             date_added: None,
             lyrics: None,
             series: None,
             artist: Artist {
-                id: res.dam_artist_code,
+                id: parse_str_id(res.dam_artist_code),
                 name: res.artist,
             },
         }
