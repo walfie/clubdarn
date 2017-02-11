@@ -1,6 +1,7 @@
-use client::ClientMetadata;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+
+use client;
 
 pub enum RequestType {
     Json,
@@ -13,7 +14,7 @@ pub trait Request<'a>: Serialize {
     fn request_type() -> RequestType;
 
     fn url() -> &'a str;
-    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self;
+    fn from_client_metadata(meta: &client::Metadata<'a>) -> Self;
 
     fn set_serial_no(&mut self, serial_no: &'a str) -> &Self;
     fn unset_serial_no(&mut self) -> &Self;

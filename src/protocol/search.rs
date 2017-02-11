@@ -1,5 +1,6 @@
-use client::ClientMetadata;
 use std::borrow::Cow;
+
+use client;
 use super::*;
 use super::super::util::*;
 
@@ -50,7 +51,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         API_URL
     }
 
-    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self {
+    fn from_client_metadata(meta: &client::Metadata<'a>) -> Self {
         Request {
             app_ver: meta.app_ver,
             device_id: meta.device_id,

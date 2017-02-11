@@ -1,5 +1,6 @@
-use client::ClientMetadata;
 use std::borrow::Cow;
+
+use client;
 use super::*;
 
 pub const API_URL: &'static str = "https://csgw.clubdam.com/minsei/recommend/GetRecommendSongs.api";
@@ -29,7 +30,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         API_URL
     }
 
-    fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self {
+    fn from_client_metadata(meta: &client::Metadata<'a>) -> Self {
         // Same values as the ones hardcoded into the Denmoku app
         Request {
             comp_id: 1,

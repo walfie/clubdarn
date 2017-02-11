@@ -11,18 +11,18 @@ use clubdarn::*;
 fn main() {
     let client = Client::default();
 
-    pretty_print(&client.songs_by_title("on flower", MatchType::Contains).send());
+    pretty_print(&client.songs().containing("on flower").send());
 
-    pretty_print(&client.artists_by_name("aikatsu", MatchType::StartsWith).send());
+    pretty_print(&client.artists().starting_with("aikatsu").send());
 
-    pretty_print(&client.songs_by_ids(vec![369073]).send());
+    pretty_print(&client.songs().by_ids(vec![369073]).send());
 
     {
         let lookup = TitleAndArtist {
             title: "wake up my music",
             artist: "りさ、えいみ",
         };
-        pretty_print(&client.songs_by_title_and_artist(vec![lookup]).send());
+        pretty_print(&client.songs().by_title_and_artist(vec![lookup]).send());
     }
 }
 

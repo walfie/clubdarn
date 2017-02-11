@@ -4,9 +4,7 @@ extern crate reqwest;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use category;
 use model::*;
-use protocol::{api, exist, recommend, search};
 use request_builder::*;
 
 const DEFAULT_APP_VER: &'static str = "1.2.0"; // Denmoku Mini app version
@@ -16,10 +14,10 @@ const DEFAULT_OS_VER: &'static str = env!("CARGO_PKG_VERSION");
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
-    meta: ClientMetadata<'a>,
+    meta: Metadata<'a>,
 }
 
-pub struct ClientMetadata<'a> {
+pub struct Metadata<'a> {
     pub app_ver: &'a str,
     pub device_id: &'a str,
     pub device_nm: &'a str,
@@ -29,7 +27,7 @@ pub struct ClientMetadata<'a> {
 
 impl<'a> Client<'a> {
     pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
-        let meta = ClientMetadata {
+        let meta = Metadata {
             app_ver: app_ver,
             device_id: device_id,
             device_nm: device_nm,
@@ -50,10 +48,6 @@ impl<'a> Client<'a> {
                   DEFAULT_OS_VER)
     }
 
-    fn default_request<T: api::Request<'a>>(&self) -> T {
-        T::from_client_metadata(&self.meta)
-    }
-
     fn request_builder<T, U>(&self, req: T) -> RequestBuilder<'a, T, U> {
         RequestBuilder {
             http: self.http.clone(),
@@ -67,95 +61,16 @@ impl<'a> Client<'a> {
         self
     }
 
-    pub fn songs_by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
-        let mut req = self.default_request::<search::Request>();
-        req.artist_id = Some(id);
-        req.category_cd = category::ARTIST_NAME.0;
-
-        self.request_builder(req)
+    pub fn artists(&self) -> RequestBuilder<&Metadata, Artist> {
+        self.request_builder(&self.meta)
     }
 
-    pub fn songs_by_title(&self,
-                          title: &'a str,
-                          match_type: MatchType)
-                          -> RequestBuilder<search::Request, Song> {
-        let mut req = self.default_request::<search::Request>();
-        req.song_name = Some(title);
-        req.category_cd = category::SONG_NAME.0;
-        req.song_match_type = Some(match_type.into());
-
-        self.request_builder(req)
+    pub fn songs(&self) -> RequestBuilder<&Metadata, Song> {
+        self.request_builder(&self.meta)
     }
 
-    pub fn songs_by_series(&self,
-                           title: &'a str,
-                           category: category::CategoryId)
-                           -> RequestBuilder<search::Request, Song> {
-        let mut req = self.default_request::<search::Request>();
-        req.program_title = Some(title);
-        req.category_cd = category.0;
-
-        self.request_builder(req)
-    }
-
-    pub fn artists_by_name(&self,
-                           name: &'a str,
-                           match_type: MatchType)
-                           -> RequestBuilder<search::Request, Artist> {
-        let mut req = self.default_request::<search::Request>();
-        req.artist_name = Some(name);
-        req.category_cd = category::ARTIST_NAME.0;
-        req.artist_match_type = Some(match_type.into());
-
-        self.request_builder(req)
-    }
-
-    pub fn series_by_category(&self,
-                              category: category::CategoryId)
-                              -> RequestBuilder<search::Request, Series> {
-        let mut req = self.default_request::<search::Request>();
-        req.category_cd = category.0;
-
-        self.request_builder(req)
-    }
-
-    pub fn new_songs_by_category(&self,
-                                 category: category::CategoryId)
-                                 -> RequestBuilder<search::Request, Song> {
-        let mut req = self.default_request::<search::Request>();
-        req.category_cd = category.0;
-
-        self.request_builder(req)
-    }
-
-    pub fn songs_by_ids(&self, ids: Vec<i32>) -> RequestBuilder<exist::Request, Song> {
-        let mut req = self.default_request::<exist::Request>();
-        req.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
-
-        self.request_builder(req)
-    }
-
-    pub fn songs_by_title_and_artist(&self,
-                                     titles_and_artists: Vec<TitleAndArtist<'a>>)
-                                     -> RequestBuilder<exist::Request, Song> {
-        let mut req = self.default_request::<exist::Request>();
-        req.is_exist = titles_and_artists.iter()
-            .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
-            .collect();
-
-        self.request_builder(req)
-    }
-
-    pub fn similar_songs(&self, song_id: i32) -> RequestBuilder<recommend::Request, Song> {
-        let mut req = self.default_request::<recommend::Request>();
-        let mut song_id_str = song_id.to_string();
-        if (song_id_str.len() as i32) > 4 {
-            song_id_str.insert(4, '-');
-        }
-
-        req.request_no_list = song_id_str.into();
-
-        self.request_builder(req)
+    pub fn series(&self) -> RequestBuilder<&Metadata, Series> {
+        self.request_builder(&self.meta)
     }
 }
 
