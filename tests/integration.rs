@@ -12,13 +12,13 @@ fn songs_by_title() {
     let response = request.send();
 
     let expected_song = Song {
-        id: "366869".into(),
+        id: SongId(366869),
         title: "Wake up my music".into(),
-        date_added: "20131102".into(),
-        lyrics: "毎日違うわたしに 気づいてるかな".into(),
+        date_added: Some("20131102".into()),
+        lyrics: Some("毎日違うわたしに 気づいてるかな".into()),
         series: None,
         artist: Artist {
-            id: "96028".into(),
+            id: ArtistId(96028),
             name: "りさ、えいみ".into(),
         },
     };

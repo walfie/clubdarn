@@ -2,18 +2,18 @@ use protocol::{exist, recommend, search};
 use std::borrow::Cow;
 use std::convert::From;
 
-#[derive(Debug, Serialize)]
-pub struct SongId(i32);
-#[derive(Debug, Serialize)]
-pub struct ArtistId(i32);
+#[derive(Debug, PartialEq, Serialize)]
+pub struct SongId(pub i32);
+#[derive(Debug, PartialEq, Serialize)]
+pub struct ArtistId(pub i32);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Artist<'a> {
     pub id: ArtistId,
     pub name: Cow<'a, str>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Song<'a> {
     pub id: SongId,
     pub title: Cow<'a, str>,
@@ -26,7 +26,7 @@ pub struct Song<'a> {
     pub series: Option<Cow<'a, str>>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Series<'a> {
     pub title: Cow<'a, str>,
     #[serde(rename = "firstKana")]

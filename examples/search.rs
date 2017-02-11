@@ -15,7 +15,7 @@ fn main() {
 
     pretty_print(&client.artists_by_name("aikatsu", MatchType::StartsWith).send());
 
-    pretty_print(&client.songs_by_ids(vec!["369073"]).send());
+    pretty_print(&client.songs_by_ids(vec![369073]).send());
 
     {
         let lookup = TitleAndArtist {
