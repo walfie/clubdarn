@@ -56,7 +56,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn serial_no(mut self, serial_no: Option<&'a str>) -> Self {
+    pub fn default_serial_no(mut self, serial_no: Option<&'a str>) -> Self {
         self.meta.serial_no = serial_no;
         self
     }

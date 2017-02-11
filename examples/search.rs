@@ -17,13 +17,9 @@ fn main() {
 
     pretty_print(&client.songs().by_ids(vec![369073]).send());
 
-    {
-        let lookup = TitleAndArtist {
-            title: "wake up my music",
-            artist: "りさ、えいみ",
-        };
-        pretty_print(&client.songs().by_title_and_artist(vec![lookup]).send());
-    }
+    pretty_print(&client.songs()
+        .by_title_and_artist("wake up my music", "りさ、えいみ")
+        .send());
 }
 
 fn pretty_print<T: Serialize>(t: &T) -> () {

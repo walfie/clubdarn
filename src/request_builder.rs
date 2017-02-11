@@ -78,9 +78,13 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         req
     }
 
-    pub fn by_title_and_artist(self,
-                               titles_and_artists: Vec<client::TitleAndArtist<'a>>)
-                               -> RequestBuilder<exist::Request, Song> {
+    pub fn by_id(self, id: i32) -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
+        self.by_ids(vec![id])
+    }
+
+    pub fn by_titles_and_artists(self,
+                                 titles_and_artists: Vec<client::TitleAndArtist<'a>>)
+                                 -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
             .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
@@ -89,9 +93,22 @@ impl<'a> RequestBuilder<'a, &'a client::Metadata<'a>, Song<'a>> {
         req
     }
 
+    pub fn by_title_and_artist(self,
+                               title: &'a str,
+                               artist: &'a str)
+                               -> RequestBuilder<'a, exist::Request<'a>, Song<'a>> {
+        let info = client::TitleAndArtist {
+            title: title,
+            artist: artist,
+        };
+        self.by_titles_and_artists(vec![info])
+    }
+
     pub fn similar_to(self, song_id: i32) -> RequestBuilder<'a, recommend::Request<'a>, Song<'a>> {
         let mut req = self.default_request::<recommend::Request>();
         let mut song_id_str = song_id.to_string();
+
+        // The recommend API requires song IDs to be in the format "1234-56"
         if (song_id_str.len() as i32) > 4 {
             song_id_str.insert(4, '-');
         }
