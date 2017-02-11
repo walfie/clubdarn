@@ -2,8 +2,15 @@ use client::ClientMetadata;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
+pub enum RequestType {
+    Json,
+    FormData,
+}
+
 pub trait Request<'a>: Serialize {
     type ResponseType: Response<'a>;
+
+    fn request_type() -> RequestType;
 
     fn url() -> &'a str;
     fn from_client_metadata(meta: &ClientMetadata<'a>) -> Self;

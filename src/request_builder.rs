@@ -35,11 +35,15 @@ impl<'a, R, I> RequestBuilder<'a, R, I>
     pub fn send(&self) -> Paginated<'a, I> {
         use protocol::api::Response;
 
-        let json = serde_json::to_string(&self.request).unwrap();
+        let request = self.http.post(R::url());
 
-        let response: R::ResponseType = self.http
-            .post(R::url())
-            .body(json)
+        let request_body = match R::request_type() {
+            api::RequestType::Json => request.json(&self.request),
+            api::RequestType::FormData => request.form(&self.request),
+        };
+
+        // TODO: Error handling
+        let response: R::ResponseType = request_body
             .send()
             .unwrap()
             .json()

@@ -4,9 +4,9 @@ extern crate reqwest;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use model::*;
 use category;
-use protocol::{api, search, exist};
+use model::*;
+use protocol::{api, exist, recommend, search};
 use request_builder::*;
 
 const DEFAULT_APP_VER: &'static str = "1.2.0"; // Denmoku Mini app version

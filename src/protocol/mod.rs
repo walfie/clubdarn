@@ -1,3 +1,4 @@
 pub mod api;
-pub mod search;
 pub mod exist;
+pub mod recommend;
+pub mod search;

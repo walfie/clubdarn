@@ -51,6 +51,11 @@ impl<'a> RequestItem<'a> {
 
 impl<'a> api::Request<'a> for Request<'a> {
     type ResponseType = Response<'a>;
+
+    fn request_type() -> api::RequestType {
+        api::RequestType::Json
+    }
+
     fn url() -> &'a str {
         API_URL
     }

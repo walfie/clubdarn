@@ -1,4 +1,4 @@
-use protocol::{exist, search};
+use protocol::{exist, recommend, search};
 use std::borrow::Cow;
 use std::convert::From;
 
@@ -13,8 +13,8 @@ pub struct Song<'a> {
     pub id: Cow<'a, str>,
     pub title: Cow<'a, str>,
     pub artist: Artist<'a>,
-    pub date_added: Cow<'a, str>,
-    pub lyrics: Cow<'a, str>,
+    pub date_added: Option<Cow<'a, str>>,
+    pub lyrics: Option<Cow<'a, str>>,
     pub series: Option<Cow<'a, str>>,
 }
 
@@ -71,8 +71,8 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
         Song {
             id: res.req_no,
             title: res.song_name,
-            date_added: res.dist_start, // TODO: DateTime
-            lyrics: res.first_bars,
+            date_added: Some(res.dist_start), // TODO: DateTime
+            lyrics: Some(res.first_bars),
             series: series,
             artist: Artist {
                 id: res.artist_id,
@@ -87,12 +87,29 @@ impl<'a> From<exist::Item<'a>> for Song<'a> {
         Song {
             id: res.req_no,
             title: res.song_name,
-            date_added: res.dist_start, // TODO: DateTime
-            lyrics: res.first_bars,
+            date_added: Some(res.dist_start), // TODO: DateTime
+            lyrics: Some(res.first_bars),
             series: None,
             artist: Artist {
                 id: res.artist_id,
                 name: res.artist_name,
+            },
+        }
+    }
+}
+
+impl<'a> From<recommend::Item<'a>> for Song<'a> {
+    fn from(res: recommend::Item<'a>) -> Self {
+        Song {
+            // TODO: `replacen` stabilizes in Rust 1.16.0
+            id: res.request_no.replace("-", "").into(),
+            title: res.denmoku_contents,
+            date_added: None,
+            lyrics: None,
+            series: None,
+            artist: Artist {
+                id: res.dam_artist_code,
+                name: res.artist,
             },
         }
     }
