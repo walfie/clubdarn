@@ -12,11 +12,9 @@ pub struct Request<'a> {
     contract_id: i8,
     #[serde(rename = "compAuthKey")]
     comp_auth_key: &'a str,
-    #[serde(rename = "format")]
     format: &'a str,
     #[serde(rename = "requestNoList")]
     pub request_no_list: Cow<'a, str>,
-    #[serde(rename = "serial")]
     pub serial: Option<&'a str>,
 }
 

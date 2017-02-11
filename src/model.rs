@@ -13,22 +13,29 @@ pub struct Song<'a> {
     pub id: i32,
     pub title: Cow<'a, str>,
     pub artist: Artist<'a>,
+    #[serde(rename = "dateAdded", skip_serializing_if = "Option::is_none")]
     pub date_added: Option<Cow<'a, str>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lyrics: Option<Cow<'a, str>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub series: Option<Cow<'a, str>>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Series<'a> {
     pub title: Cow<'a, str>,
+    #[serde(rename = "firstKana")]
     pub first_kana: Cow<'a, str>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Paginated<'a, T: 'a> {
     pub page: i32,
+    #[serde(rename="categoryId", skip_serializing_if = "Option::is_none")]
     pub category_id: Option<Cow<'a, str>>,
+    #[serde(rename="total_items")]
     pub total_items: i32,
+    #[serde(rename="total_pages")]
     pub total_pages: i32,
     pub items: Vec<T>,
 }
