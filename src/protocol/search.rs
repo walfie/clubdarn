@@ -21,7 +21,7 @@ pub struct Request<'a> {
 
     pub page: i32,
     #[serde(rename = "categoryCd")]
-    pub category_cd: &'a str,
+    pub category_cd: Cow<'a, str>,
 
     #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
     pub artist_id: Option<i32>,
@@ -74,7 +74,7 @@ impl<'a> api::Request<'a> for Request<'a> {
     }
 
     fn category(&self) -> Option<Cow<'a, str>> {
-        Some(self.category_cd.into())
+        Some(self.category_cd.clone())
     }
 
     fn get_page(&self) -> i32 {

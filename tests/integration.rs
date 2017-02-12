@@ -6,7 +6,9 @@ use clubdarn::*;
 fn songs_by_title() {
     let client = Client::default();
 
-    let mut request = client.songs().starting_with("wake up my music");
+    // TODO: Make it so `.songs()` doesn't need to live as long as `starting_with(...)`
+    let song_request = client.songs();
+    let mut request = song_request.starting_with("wake up my music");
 
     // "Wake up my music" should exist on LiveDAM...
     let response = request.send();

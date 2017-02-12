@@ -1,10 +1,12 @@
 extern crate serde_json;
 extern crate reqwest;
 
+use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
 use category;
+use category::CategoryId;
 use model::*;
 use protocol::{api, exist, recommend, search};
 
@@ -49,7 +51,7 @@ impl<'a> Client<'a> {
                   DEFAULT_OS_VER)
     }
 
-    fn request_builder<T, U>(&self, req: T) -> RequestBuilder<'a, T, U> {
+    fn request_builder<T, U>(&self, req: T) -> RequestBuilder<T, U> {
         RequestBuilder {
             http: self.http.clone(),
             request: req,
@@ -96,14 +98,14 @@ impl From<MatchType> for &'static str {
 }
 
 #[must_use = "RequestBuilder does nothing until you call `send`"]
-pub struct RequestBuilder<'a, RequestT, ResponseItemT: 'a> {
+pub struct RequestBuilder<RequestT, ResponseItemT> {
     http: Arc<reqwest::Client>,
     request: RequestT,
-    response_item_type: PhantomData<&'a ResponseItemT>,
+    response_item_type: PhantomData<ResponseItemT>,
 }
 
-impl<'a, I> RequestBuilder<'a, &'a Metadata<'a>, I> {
-    fn default_request<R>(&self) -> RequestBuilder<'a, R, I>
+impl<'a, I> RequestBuilder<&'a Metadata<'a>, I> {
+    fn default_request<R>(&self) -> RequestBuilder<R, I>
         where R: api::Request<'a>
     {
         RequestBuilder {
@@ -114,7 +116,7 @@ impl<'a, I> RequestBuilder<'a, &'a Metadata<'a>, I> {
     }
 }
 
-impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
+impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
     pub fn by_title(&self,
                     title: &'a str,
                     match_type: MatchType)
@@ -122,7 +124,7 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.song_name = Some(title);
         req.request.song_match_type = Some(match_type.into());
-        req.request.category_cd = category::SONG_NAME.0;
+        req.request.category_cd = CategoryId::from(category::Other::SongName).0.into();
         req
     }
 
@@ -134,42 +136,46 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
         self.by_title(title, MatchType::Contains)
     }
 
-    pub fn by_artist_id(&self, id: i32) -> RequestBuilder<'a, search::Request<'a>, Song> {
+    pub fn by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_id = Some(id);
-        req.request.category_cd = ::category::ARTIST_NAME.0;
+        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0.into();
         req
     }
 
-    pub fn by_series(&self,
-                     title: &'a str,
-                     category_id: &'a str)
-                     -> RequestBuilder<'a, search::Request<'a>, Song> {
+    pub fn by_series<T>(&self,
+                        title: &'a str,
+                        category_id: T)
+                        -> RequestBuilder<search::Request, Song>
+        where T: Into<Cow<'a, str>>
+    {
         let mut req = self.default_request::<search::Request>();
         req.request.program_title = Some(title);
-        req.request.category_cd = category_id;
+        req.request.category_cd = category_id.into();
         req
     }
 
-    pub fn recent(&self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn recent<T>(&self, category_id: T) -> RequestBuilder<search::Request, Song>
+        where T: Into<Cow<'a, str>>
+    {
         let mut req = self.default_request::<search::Request>();
-        req.request.category_cd = category_id;
+        req.request.category_cd = category_id.into();
         req
     }
 
-    pub fn by_ids(&self, ids: Vec<i32>) -> RequestBuilder<'a, exist::Request<'a>, Song> {
+    pub fn by_ids(&self, ids: Vec<i32>) -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
         req
     }
 
-    pub fn by_id(&self, id: i32) -> RequestBuilder<'a, exist::Request<'a>, Song> {
+    pub fn by_id(&self, id: i32) -> RequestBuilder<exist::Request, Song> {
         self.by_ids(vec![id])
     }
 
     pub fn by_titles_and_artists(&self,
                                  titles_and_artists: Vec<TitleAndArtist<'a>>)
-                                 -> RequestBuilder<'a, exist::Request<'a>, Song> {
+                                 -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
             .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
@@ -181,7 +187,7 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
     pub fn by_title_and_artist(&self,
                                title: &'a str,
                                artist: &'a str)
-                               -> RequestBuilder<'a, exist::Request<'a>, Song> {
+                               -> RequestBuilder<exist::Request, Song> {
         let info = TitleAndArtist {
             title: title,
             artist: artist,
@@ -189,7 +195,7 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
         self.by_titles_and_artists(vec![info])
     }
 
-    pub fn similar_to(&self, song_id: i32) -> RequestBuilder<'a, recommend::Request<'a>, Song> {
+    pub fn similar_to(&self, song_id: i32) -> RequestBuilder<recommend::Request, Song> {
         let mut req = self.default_request::<recommend::Request>();
         let mut song_id_str = song_id.to_string();
 
@@ -203,7 +209,7 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Song> {
     }
 }
 
-impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Artist> {
+impl<'a> RequestBuilder<&'a Metadata<'a>, Artist> {
     pub fn by_name(&self,
                    name: &'a str,
                    match_type: MatchType)
@@ -211,7 +217,7 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Artist> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_name = Some(name);
         req.request.artist_match_type = Some(match_type.into());
-        req.request.category_cd = category::ARTIST_NAME.0;
+        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0.into();
         req
     }
 
@@ -224,15 +230,17 @@ impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Artist> {
     }
 }
 
-impl<'a> RequestBuilder<'a, &'a Metadata<'a>, Series> {
-    pub fn by_category(&self, category_id: &'a str) -> RequestBuilder<search::Request, Series> {
+impl<'a> RequestBuilder<&'a Metadata<'a>, Series> {
+    pub fn by_category<T>(&self, category_id: T) -> RequestBuilder<search::Request, Series>
+        where T: Into<Cow<'a, str>>
+    {
         let mut req = self.default_request::<search::Request>();
-        req.request.category_cd = category_id;
+        req.request.category_cd = category_id.into();
         req
     }
 }
 
-impl<'a, R, I> RequestBuilder<'a, R, I>
+impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>
 {
     pub fn set_page(&mut self, page_num: i32) -> &Self {
@@ -246,7 +254,7 @@ impl<'a, R, I> RequestBuilder<'a, R, I>
     }
 }
 
-impl<'a, R, I> RequestBuilder<'a, R, I>
+impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>,
           I: From<<R::ResponseType as api::Response>::ItemType>
 {

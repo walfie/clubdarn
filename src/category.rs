@@ -1,8 +1,116 @@
-// TODO: Remove this
-#![allow(non_upper_case_globals)]
+use std::borrow::Cow;
 
-pub struct CategoryId(pub &'static str);
+pub enum CategoryType {
+    NewSong(NewSong),
+    Series(Series), // series
+    Vocaloid(Vocaloid),
+    Ranking(Ranking),
+    Other(Other),
+}
 
+#[derive(Copy, Clone)]
+pub enum Other {
+    ArtistName = 10000, // artist
+    SongName = 20000,
+    CastPicture = 40000, // artist
+}
+
+#[derive(Copy, Clone)]
+pub enum NewSong {
+    All = 30100,
+    LiveKaraoke = 30201,
+    CastPicture = 30202,
+    ClipJustNow = 30203,
+    AnimeGame = 30301,
+    Tokusatsu = 30302,
+    Cm = 30401,
+    DramaMovie = 30402,
+    Variety = 30403,
+    MusicProgram = 30404,
+    InformationProgram = 30405,
+    Sports = 30406,
+    SoonDelivery = 30500,
+}
+
+#[derive(Copy, Clone)]
+pub enum Series {
+    Anime = 50100,
+    Tokusatsu = 50200,
+    Image = 50300,
+}
+
+#[derive(Copy, Clone)]
+pub enum Vocaloid {
+    Miku = 60100,
+    RinLen = 60200,
+    Luka = 60300,
+    KaitoMeiko = 60400,
+    Gumi = 60500,
+    Gakupo = 60600,
+    Lily = 60700,
+    Other = 60800,
+    Image = 60900,
+}
+
+#[derive(Copy, Clone)]
+pub enum Ranking {
+    Pop = 70100,
+    Ballad = 70200,
+    Western = 70300,
+    Duet = 70400,
+    AnimeTokusatsu = 70500,
+    Recommended1 = 71100,
+    Recommended2 = 71200,
+    Recommended3 = 71300,
+    Recommended4 = 71400,
+    Recommended5 = 71500,
+}
+
+pub struct CategoryId(pub String);
+
+impl<'a> From<CategoryId> for Cow<'a, str> {
+    fn from(c: CategoryId) -> Self {
+        c.0.into()
+    }
+}
+
+fn pad_category(i: i32) -> String {
+    format!("{:06}", i)
+}
+
+impl From<Other> for CategoryId {
+    fn from(c: Other) -> Self {
+        CategoryId(pad_category(c as i32))
+    }
+}
+
+impl From<NewSong> for CategoryId {
+    fn from(c: NewSong) -> Self {
+        CategoryId(pad_category(c as i32))
+    }
+}
+
+impl From<Series> for CategoryId {
+    fn from(c: Series) -> Self {
+        CategoryId(pad_category(c as i32))
+    }
+}
+
+impl From<Vocaloid> for CategoryId {
+    fn from(c: Vocaloid) -> Self {
+        CategoryId(pad_category(c as i32))
+    }
+}
+
+impl From<Ranking> for CategoryId {
+    fn from(c: Ranking) -> Self {
+        CategoryId(pad_category(c as i32))
+    }
+}
+
+
+
+/*
 pub const ARTIST_NAME: CategoryId = CategoryId("010000");
 pub const SONG_NAME: CategoryId = CategoryId("020000");
 
@@ -93,3 +201,4 @@ pub const CNTNTS_OnePiece: CategoryId = CategoryId("810042"); // ONE PIECE 採�
 pub const CNTNTS_VarietyOmoshiro: CategoryId = CategoryId("810041"); // バラエティカラオケ おもしろコース
 pub const CNTNTS_VarietyUtauma: CategoryId = CategoryId("810044"); // バラエティカラオケ 歌うまコース
 pub const CNTNTS_End: CategoryId = CategoryId("810099"); // 採点ゲームおわり
+*/
