@@ -51,7 +51,7 @@ impl<'a> RequestItem<'a> {
 }
 
 impl<'a> api::Request<'a> for Request<'a> {
-    type ResponseType = Response<'a>;
+    type ResponseType = Response;
 
     fn request_type() -> api::RequestType {
         api::RequestType::Json
@@ -97,15 +97,15 @@ impl<'a> api::Request<'a> for Request<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Response<'a> {
+pub struct Response {
     #[serde(rename = "isExist")]
-    pub is_exist: Vec<Item<'a>>,
+    pub is_exist: Vec<Item>,
 }
 
-impl<'a> api::Response<'a> for Response<'a> {
-    type ItemType = Item<'a>;
+impl api::Response for Response {
+    type ItemType = Item;
 
-    fn items(self) -> Vec<Item<'a>> {
+    fn items(self) -> Vec<Item> {
         self.is_exist.into_iter().filter(|item| !item.req_no.is_empty()).collect()
     }
 
@@ -119,31 +119,31 @@ impl<'a> api::Response<'a> for Response<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Item<'a> {
+pub struct Item {
     #[serde(rename = "artistId")]
-    pub artist_id: Cow<'a, str>,
+    pub artist_id: String,
     #[serde(rename = "artistName")]
-    pub artist_name: Cow<'a, str>,
+    pub artist_name: String,
     #[serde(rename = "distEnd")]
-    pub dist_end: Cow<'a, str>,
+    pub dist_end: String,
     #[serde(rename = "distStart")]
-    pub dist_start: Cow<'a, str>,
+    pub dist_start: String,
     #[serde(rename = "firstBars")]
-    pub first_bars: Cow<'a, str>,
+    pub first_bars: String,
     #[serde(rename = "funcAnimePicture")]
-    pub func_anime_picture: Cow<'a, str>,
+    pub func_anime_picture: String,
     #[serde(rename = "funcPersonPicture")]
-    pub func_person_picture: Cow<'a, str>,
+    pub func_person_picture: String,
     #[serde(rename = "funcRecording")]
-    pub func_recording: Cow<'a, str>,
+    pub func_recording: String,
     #[serde(rename = "funcScore")]
-    pub func_score: Cow<'a, str>,
+    pub func_score: String,
     #[serde(rename = "myKey")]
-    pub my_key: Cow<'a, str>,
+    pub my_key: String,
     #[serde(rename = "orgKey")]
-    pub org_key: Cow<'a, str>,
+    pub org_key: String,
     #[serde(rename = "reqNo")]
-    pub req_no: Cow<'a, str>,
+    pub req_no: String,
     #[serde(rename = "songName")]
-    pub song_name: Cow<'a, str>,
+    pub song_name: String,
 }

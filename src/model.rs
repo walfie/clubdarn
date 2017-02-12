@@ -8,36 +8,36 @@ pub struct SongId(pub i32);
 pub struct ArtistId(pub i32);
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Artist<'a> {
+pub struct Artist {
     pub id: ArtistId,
-    pub name: Cow<'a, str>,
+    pub name: String,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Song<'a> {
+pub struct Song {
     pub id: SongId,
-    pub title: Cow<'a, str>,
-    pub artist: Artist<'a>,
+    pub title: String,
+    pub artist: Artist,
     #[serde(rename = "dateAdded", skip_serializing_if = "Option::is_none")]
-    pub date_added: Option<Cow<'a, str>>,
+    pub date_added: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub lyrics: Option<Cow<'a, str>>,
+    pub lyrics: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub series: Option<Cow<'a, str>>,
+    pub series: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Series<'a> {
-    pub title: Cow<'a, str>,
+pub struct Series {
+    pub title: String,
     #[serde(rename = "firstKana")]
-    pub first_kana: Cow<'a, str>,
+    pub first_kana: String,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct Paginated<'a, T: 'a> {
+pub struct Paginated<T> {
     pub page: i32,
     #[serde(rename="categoryId", skip_serializing_if = "Option::is_none")]
-    pub category_id: Option<Cow<'a, str>>,
+    pub category_id: Option<String>,
     #[serde(rename="total_items")]
     pub total_items: i32,
     #[serde(rename="total_pages")]
@@ -45,7 +45,7 @@ pub struct Paginated<'a, T: 'a> {
     pub items: Vec<T>,
 }
 
-impl<'a, T> Paginated<'a, T> {
+impl<T> Paginated<T> {
     pub fn next_page(&self) -> Option<i32> {
         if self.page < self.total_pages {
             Some(self.page + 1)
@@ -63,21 +63,25 @@ impl<'a, T> Paginated<'a, T> {
     }
 }
 
-impl<'a> From<Cow<'a, str>> for SongId {
-    fn from(s: Cow<'a, str>) -> Self {
+impl<'a, T> From<T> for SongId
+    where T: Into<Cow<'a, str>>
+{
+    fn from(s: T) -> Self {
         // TODO: `replacen` stabilizes in Rust 1.16.0
-        SongId(s.replace("-", "").parse().unwrap_or(-1))
+        SongId(s.into().replace("-", "").parse().unwrap_or(-1))
     }
 }
 
-impl<'a> From<Cow<'a, str>> for ArtistId {
-    fn from(s: Cow<'a, str>) -> Self {
-        ArtistId(s.parse().unwrap_or(-1))
+impl<'a, T> From<T> for ArtistId
+    where T: Into<Cow<'a, str>>
+{
+    fn from(s: T) -> Self {
+        ArtistId(s.into().parse().unwrap_or(-1))
     }
 }
 
-impl<'a> From<search::Item<'a>> for Artist<'a> {
-    fn from(res: search::Item<'a>) -> Self {
+impl From<search::Item> for Artist {
+    fn from(res: search::Item) -> Self {
         Artist {
             id: res.artist_id.into(),
             name: res.artist_name,
@@ -85,8 +89,8 @@ impl<'a> From<search::Item<'a>> for Artist<'a> {
     }
 }
 
-impl<'a> From<search::Item<'a>> for Song<'a> {
-    fn from(res: search::Item<'a>) -> Self {
+impl From<search::Item> for Song {
+    fn from(res: search::Item) -> Self {
         let series = if res.program_title.is_empty() {
             None
         } else {
@@ -107,8 +111,8 @@ impl<'a> From<search::Item<'a>> for Song<'a> {
     }
 }
 
-impl<'a> From<exist::Item<'a>> for Song<'a> {
-    fn from(res: exist::Item<'a>) -> Self {
+impl From<exist::Item> for Song {
+    fn from(res: exist::Item) -> Self {
         Song {
             id: res.req_no.into(),
             title: res.song_name,
@@ -123,8 +127,8 @@ impl<'a> From<exist::Item<'a>> for Song<'a> {
     }
 }
 
-impl<'a> From<recommend::Item<'a>> for Song<'a> {
-    fn from(res: recommend::Item<'a>) -> Self {
+impl From<recommend::Item> for Song {
+    fn from(res: recommend::Item) -> Self {
         Song {
             id: res.request_no.into(),
             title: res.denmoku_contents,
@@ -139,8 +143,8 @@ impl<'a> From<recommend::Item<'a>> for Song<'a> {
     }
 }
 
-impl<'a> From<search::Item<'a>> for Series<'a> {
-    fn from(res: search::Item<'a>) -> Self {
+impl From<search::Item> for Series {
+    fn from(res: search::Item) -> Self {
         Series {
             title: res.program_title,
             first_kana: res.title_first_kana,

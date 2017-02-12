@@ -20,7 +20,7 @@ pub struct Request<'a> {
 }
 
 impl<'a> api::Request<'a> for Request<'a> {
-    type ResponseType = Response<'a>;
+    type ResponseType = Response;
 
     fn request_type() -> api::RequestType {
         api::RequestType::FormData
@@ -67,14 +67,14 @@ impl<'a> api::Request<'a> for Request<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Response<'a> {
-    pub list: Vec<Item<'a>>,
+pub struct Response {
+    pub list: Vec<Item>,
 }
 
-impl<'a> api::Response<'a> for Response<'a> {
-    type ItemType = Item<'a>;
+impl api::Response for Response {
+    type ItemType = Item;
 
-    fn items(self) -> Vec<Item<'a>> {
+    fn items(self) -> Vec<Item> {
         self.list
     }
 
@@ -88,29 +88,29 @@ impl<'a> api::Response<'a> for Response<'a> {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Item<'a> {
+pub struct Item {
     #[serde(rename = "artist")]
-    pub artist: Cow<'a, str>,
+    pub artist: String,
     #[serde(rename = "artistCode")]
-    pub artist_code: Cow<'a, str>,
+    pub artist_code: String,
     #[serde(rename = "contents")]
-    pub contents: Cow<'a, str>,
+    pub contents: String,
     #[serde(rename = "contentsId")]
-    pub contents_id: Cow<'a, str>,
+    pub contents_id: String,
     #[serde(rename = "contentsYomi")]
-    pub contents_yomi: Cow<'a, str>,
+    pub contents_yomi: String,
     #[serde(rename = "dArtistNameYomi")]
-    pub d_artist_name_yomi: Cow<'a, str>,
+    pub d_artist_name_yomi: String,
     #[serde(rename = "dSongNameYomi")]
-    pub d_song_name_yomi: Cow<'a, str>,
+    pub d_song_name_yomi: String,
     #[serde(rename = "damArtistCode")]
-    pub dam_artist_code: Cow<'a, str>,
+    pub dam_artist_code: String,
     #[serde(rename = "denmokuArtist")]
-    pub denmoku_artist: Cow<'a, str>,
+    pub denmoku_artist: String,
     #[serde(rename = "denmokuContents")]
-    pub denmoku_contents: Cow<'a, str>,
+    pub denmoku_contents: String,
     #[serde(rename = "nameYomi")]
-    pub name_yomi: Cow<'a, str>,
+    pub name_yomi: String,
     #[serde(rename = "requestNo")]
-    pub request_no: Cow<'a, str>,
+    pub request_no: String,
 }

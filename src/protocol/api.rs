@@ -9,7 +9,7 @@ pub enum RequestType {
 }
 
 pub trait Request<'a>: Serialize {
-    type ResponseType: Response<'a>;
+    type ResponseType: Response;
 
     fn request_type() -> RequestType;
 
@@ -25,7 +25,7 @@ pub trait Request<'a>: Serialize {
     fn category(&self) -> Option<Cow<'a, str>>;
 }
 
-pub trait Response<'a>: Deserialize {
+pub trait Response: Deserialize {
     type ItemType;
 
     // TODO: Maybe make this not consume self
