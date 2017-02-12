@@ -124,7 +124,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.song_name = Some(title);
         req.request.song_match_type = Some(match_type.into());
-        req.request.category_cd = CategoryId::from(category::Other::SongName).0.into();
+        req.request.category_cd = CategoryId::from(category::Other::SongName).0;
         req
     }
 
@@ -139,27 +139,27 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
     pub fn by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_id = Some(id);
-        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0.into();
+        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0;
         req
     }
 
     pub fn by_series<T>(&self,
                         title: &'a str,
-                        category_id: T)
+                        category: ::category::Series)
                         -> RequestBuilder<search::Request, Song>
         where T: Into<Cow<'a, str>>
     {
         let mut req = self.default_request::<search::Request>();
         req.request.program_title = Some(title);
-        req.request.category_cd = category_id.into();
+        req.request.category_cd = ::category::CategoryId::from(category).0;
         req
     }
 
-    pub fn recent<T>(&self, category_id: T) -> RequestBuilder<search::Request, Song>
+    pub fn recent<T>(&self, category: ::category::NewSong) -> RequestBuilder<search::Request, Song>
         where T: Into<Cow<'a, str>>
     {
         let mut req = self.default_request::<search::Request>();
-        req.request.category_cd = category_id.into();
+        req.request.category_cd = ::category::CategoryId::from(category).0;
         req
     }
 
@@ -217,7 +217,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Artist> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_name = Some(name);
         req.request.artist_match_type = Some(match_type.into());
-        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0.into();
+        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0;
         req
     }
 
