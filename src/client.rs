@@ -293,11 +293,23 @@ impl<'a, R, I> RequestBuilder<R, I>
             .json()
             .unwrap();
 
-        // Doing this weird thing because `items()` consumes `response`
+        let artist_category_id = self.request
+            .category()
+            .map_or(category::ARTIST_NAME.id.0,
+                    |c| category::artist_category(c).id.0)
+            .into();
+
+        let series_category_id = self.request
+            .category()
+            .and_then(category::series_category)
+            .map(|c| c.id.0.into());
+
+        // Doing this weird `total_items: 0` thing because `items()` consumes `response`
         let total_items = response.total_items();
         let mut body = Paginated {
             page: self.request.get_page(),
-            category_id: self.request.category().map(|c| c.to_string()),
+            artist_category_id: artist_category_id,
+            series_category_id: series_category_id,
             total_items: 0,
             total_pages: response.total_pages(),
             items: response.items().into_iter().map(I::from).collect(),

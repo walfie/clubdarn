@@ -39,8 +39,10 @@ pub struct Series {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Paginated<T> {
     pub page: i32,
-    #[serde(rename="categoryId", skip_serializing_if = "Option::is_none")]
-    pub category_id: Option<String>,
+    #[serde(rename="artistCategoryId")]
+    pub artist_category_id: String,
+    #[serde(rename="seriesCategoryId")]
+    pub series_category_id: Option<String>,
     #[serde(rename="total_items")]
     pub total_items: i32,
     #[serde(rename="total_pages")]

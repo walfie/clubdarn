@@ -94,10 +94,10 @@ categories! [
         ("030406", SPORTS, "スポーツ", "Sports"),
         ("030500", COMING_SOON, "もうすぐ配信", "Coming Soon"),
     ],
-    anime<SeriesCategory> [
+    series<SeriesCategory> [
         ("050100", ANIME, "アニメ", "Anime"),
         ("050200", TOKUSATSU, "特撮", "Tokusatsu"),
-        ("050300", IMAGE, "映像", "Music Video"),
+        ("050300", MUSIC_VIDEO, "映像", "Music Video"),
     ],
     vocaloid<SongCategory> [
         ("060100", MIKU, "初音ミク", "Miku"),
@@ -123,3 +123,24 @@ categories! [
         ("071500", RECOMMENDED5, "Recommended (5)", "Recommended (5)"),
     ],
 ];
+
+pub fn series_category<'a>(input: Cow<'a, str>) -> Option<Category<SeriesCategory>> {
+    if input == new_songs::ANIME_GAME.id.0 || input == series::ANIME.id.0 ||
+       input == ranking::ANIME_TOKUSATSU.id.0 {
+        Some(series::ANIME)
+    } else if input == new_songs::TOKUSATSU.id.0 || input == series::TOKUSATSU.id.0 {
+        Some(series::TOKUSATSU)
+    } else if input == series::MUSIC_VIDEO.id.0 {
+        Some(series::MUSIC_VIDEO)
+    } else {
+        None
+    }
+}
+
+pub fn artist_category<'a>(input: Cow<'a, str>) -> Category<ArtistCategory> {
+    if input == CAST_PICTURE.id.0 {
+        CAST_PICTURE
+    } else {
+        ARTIST_NAME
+    }
+}
