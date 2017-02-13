@@ -60,66 +60,66 @@ macro_rules! categories {
 
             $( category!($cat_type, $cat_id, $cat_name, $desc_ja, $desc_en); )+
 
-            pub const ALL_CATEGORIES: [Category<$cat_type>; count_items!( $($cat_name),+ )] =
+            pub const CATEGORIES: [Category<$cat_type>; count_items!( $($cat_name),+ )] =
                 [$( $cat_name ),+];
         }
     )+ };
 }
 
+category!(SongCategory, "020000", SONG_NAME, "曲名", "Song Name");
 category!(ArtistCategory,
           "010000",
           ARTIST_NAME,
           "歌手名",
           "Artist Name");
-category!(SongCategory, "020000", SONG_NAME, "曲名", "Song Name");
 category!(ArtistCategory,
           "040000",
           CAST_PICTURE,
           "本人映像",
-          "Cast Picture");
+          "Live Performance");
 
 categories! [
     new_songs<SongCategory> [
-        ("030100", ALL, "全曲", ""),
-        ("030201", LIVE_KARAOKE, "LIVEカラオケ", ""),
-        ("030202", CAST_PICTURE, "本人出演映像", ""),
-        ("030203", CLIP_JUST_NOW, "今だけクリップ", ""),
-        ("030301", ANIME_GAME, "アニメ・ゲーム", ""),
-        ("030302", TOKUSATSU, "特撮", ""),
-        ("030401", CM, "CM", ""),
-        ("030402", DRAMA_MOVIE, "ドラマ・映画", ""),
-        ("030403", VARIETY, "バラエティ", ""),
-        ("030404", MUSIC_PROGRAM, "音楽番組", ""),
-        ("030405", INFORMATION_PROGRAM, "情報番組", ""),
-        ("030406", SPORTS, "スポーツ", ""),
-        ("030500", SOON_DELIVERY, "もうすぐ配信", ""),
+        ("030100", ALL, "全曲", "All"),
+        ("030201", LIVE_KARAOKE, "LIVEカラオケ", "Live Karaoke"),
+        ("030202", MUSIC_VIDEO, "本人出演映像", "Music Video"),
+        ("030203", LIMITED_TIME_VIDEO, "今だけクリップ", "Limited Time Video"),
+        ("030301", ANIME_GAME, "アニメ・ゲーム", "Anime/Game"),
+        ("030302", TOKUSATSU, "特撮", "Tokusatsu"),
+        ("030401", CM, "CM", "Commercial"),
+        ("030402", DRAMA_MOVIE, "ドラマ・映画", "Drama/Movie"),
+        ("030403", VARIETY, "バラエティ", "Variety"),
+        ("030404", MUSIC_PROGRAM, "音楽番組", "Music Program"),
+        ("030405", INFORMATION_PROGRAM, "情報番組", "Information Program"),
+        ("030406", SPORTS, "スポーツ", "Sports"),
+        ("030500", COMING_SOON, "もうすぐ配信", "Coming Soon"),
     ],
     anime<SeriesCategory> [
-        ("050100", ANIME, "アニメ", ""),
-        ("050200", TOKUSATSU, "特撮", ""),
-        ("050300", IMAGE, "映像", ""),
+        ("050100", ANIME, "アニメ", "Anime"),
+        ("050200", TOKUSATSU, "特撮", "Tokusatsu"),
+        ("050300", IMAGE, "映像", "Music Video"),
     ],
     vocaloid<SongCategory> [
-        ("060100", MIKU, "初音ミク", ""),
-        ("060200", RIN_LEN, "鏡音リン・鏡音レン", ""),
-        ("060300", LUKA, "巡音ルカ", ""),
-        ("060400", KAITO_MEIKO, "KAITO・MEIKO", ""),
-        ("060500", GUMI, "GUMI", ""),
-        ("060600", GAKUPO, "神威がくぽ", ""),
-        ("060700", LILY, "Lily", ""),
-        ("060800", OTHER, "その他", ""),
-        ("060900", IMAGE, "映像", ""),
+        ("060100", MIKU, "初音ミク", "Miku"),
+        ("060200", RIN_LEN, "鏡音リン・鏡音レン", "Rin/Len"),
+        ("060300", LUKA, "巡音ルカ", "Luka"),
+        ("060400", KAITO_MEIKO, "KAITO・MEIKO", "Kaito/Meiko"),
+        ("060500", GUMI, "GUMI", "GUMI"),
+        ("060600", GAKUPO, "神威がくぽ", "Gakupo"),
+        ("060700", LILY, "Lily", "Lily"),
+        ("060800", OTHER, "その他", "Other"),
+        ("060900", IMAGE, "映像", "Music Video"),
     ],
     ranking<SongCategory> [
-        ("070100", POP, "POPS", ""),
-        ("070200", BALLAD, "演歌", ""),
-        ("070300", WESTERN, "洋楽", ""),
-        ("070400", DUET, "デュエット", ""),
-        ("070500", ANIME_TOKUSATSU, "アニメ・特撮", ""),
-        ("071100", RECOMMENDED1, "", ""),
-        ("071200", RECOMMENDED2, "", ""),
-        ("071300", RECOMMENDED3, "", ""),
-        ("071400", RECOMMENDED4, "", ""),
-        ("071500", RECOMMENDED5, "", ""),
+        ("070100", POP, "POPS", "Pop"),
+        ("070200", BALLAD, "演歌", "Ballad"),
+        ("070300", WESTERN, "洋楽", "Western"),
+        ("070400", DUET, "デュエット", "Duet"),
+        ("070500", ANIME_TOKUSATSU, "アニメ・特撮", "Anime/Tokusatsu"),
+        ("071100", RECOMMENDED1, "Recommended (1)", "Recommended (1)"),
+        ("071200", RECOMMENDED2, "Recommended (2)", "Recommended (2)"),
+        ("071300", RECOMMENDED3, "Recommended (3)", "Recommended (3)"),
+        ("071400", RECOMMENDED4, "Recommended (4)", "Recommended (4)"),
+        ("071500", RECOMMENDED5, "Recommended (5)", "Recommended (5)"),
     ],
 ];
