@@ -1,6 +1,7 @@
 use protocol::{exist, recommend, search};
 use std::borrow::Cow;
 use std::convert::From;
+use std::ops::Not;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct SongId(pub i32);
@@ -24,6 +25,8 @@ pub struct Song {
     pub lyrics: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub series: Option<String>,
+    #[serde(rename = "hasVideo", skip_serializing_if = "Not::not")]
+    pub has_video: bool,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -97,12 +100,15 @@ impl From<search::Item> for Song {
             Some(res.program_title)
         };
 
+        let has_video = res.func_anime_picture == "1" || res.func_person_picture == "1";
+
         Song {
             id: res.req_no.into(),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: series,
+            has_video: has_video,
             artist: Artist {
                 id: res.artist_id.into(),
                 name: res.artist_name,
@@ -113,12 +119,15 @@ impl From<search::Item> for Song {
 
 impl From<exist::Item> for Song {
     fn from(res: exist::Item) -> Self {
+        let has_video = res.func_anime_picture == "1" || res.func_person_picture == "1";
+
         Song {
             id: res.req_no.into(),
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
             series: None,
+            has_video: has_video,
             artist: Artist {
                 id: res.artist_id.into(),
                 name: res.artist_name,
@@ -135,6 +144,7 @@ impl From<recommend::Item> for Song {
             date_added: None,
             lyrics: None,
             series: None,
+            has_video: false,
             artist: Artist {
                 id: res.dam_artist_code.into(),
                 name: res.artist,
