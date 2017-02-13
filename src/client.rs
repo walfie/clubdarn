@@ -6,7 +6,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use category;
-use category::CategoryId;
+use category::*;
 use model::*;
 use protocol::{api, exist, recommend, search};
 
@@ -124,7 +124,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.song_name = Some(title);
         req.request.song_match_type = Some(match_type.into());
-        req.request.category_cd = CategoryId::from(category::Other::SongName).0;
+        req.request.category_cd = category::SONG_NAME.id.0;
         req
     }
 
@@ -139,7 +139,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
     pub fn by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_id = Some(id);
-        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0;
+        req.request.category_cd = category::ARTIST_NAME.id.0;
         req
     }
 
@@ -157,12 +157,12 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
 
     pub fn by_series<T>(&self,
                         title: &'a str,
-                        category: ::category::Series)
+                        category: Category<SeriesCategory>)
                         -> RequestBuilder<search::Request, Song> {
-        self.by_series_in_category_id(title, ::category::CategoryId::from(category).0)
+        self.by_series_in_category_id(title, category.id.0)
     }
 
-    pub fn recent_by_category<T>(&self, category_id: T) -> RequestBuilder<search::Request, Song>
+    pub fn by_category_id<T>(&self, category_id: T) -> RequestBuilder<search::Request, Song>
         where T: Into<Cow<'a, str>>
     {
         let mut req = self.default_request::<search::Request>();
@@ -170,8 +170,10 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
         req
     }
 
-    pub fn recent(&self, category: ::category::NewSong) -> RequestBuilder<search::Request, Song> {
-        self.recent_by_category(::category::CategoryId::from(category).0)
+    pub fn by_category(&self,
+                       category: ::category::Category<SongCategory>)
+                       -> RequestBuilder<search::Request, Song> {
+        self.by_category_id(category.id.0)
     }
 
     pub fn by_ids(&self, ids: Vec<i32>) -> RequestBuilder<exist::Request, Song> {
@@ -228,7 +230,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Artist> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_name = Some(name);
         req.request.artist_match_type = Some(match_type.into());
-        req.request.category_cd = CategoryId::from(category::Other::ArtistName).0;
+        req.request.category_cd = category::ARTIST_NAME.id.0;
         req
     }
 
@@ -251,9 +253,9 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Series> {
     }
 
     pub fn by_category<T>(&self,
-                          category: ::category::Series)
+                          category: Category<SeriesCategory>)
                           -> RequestBuilder<search::Request, Series> {
-        self.by_category_id(::category::CategoryId::from(category).0)
+        self.by_category_id(category.id.0)
     }
 }
 
