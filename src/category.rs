@@ -74,7 +74,7 @@ category!(ArtistCategory,
           "Artist Name");
 category!(ArtistCategory,
           "040000",
-          CAST_PICTURE,
+          LIVE_PERFORMANCE,
           "本人映像",
           "Live Performance");
 
@@ -138,8 +138,8 @@ pub fn series_category<'a>(input: Cow<'a, str>) -> Option<Category<SeriesCategor
 }
 
 pub fn artist_category<'a>(input: Cow<'a, str>) -> Category<ArtistCategory> {
-    if input == CAST_PICTURE.id.0 {
-        CAST_PICTURE
+    if input == LIVE_PERFORMANCE.id.0 {
+        LIVE_PERFORMANCE
     } else {
         ARTIST_NAME
     }

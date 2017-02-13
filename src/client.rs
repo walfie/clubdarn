@@ -251,6 +251,12 @@ impl<'a> RequestBuilder<Pending<'a>, Artist> {
     pub fn containing(&self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
         self.by_name(name, MatchType::Contains)
     }
+
+    pub fn live_performance(&self) -> RequestBuilder<search::Request, Artist> {
+        let mut req = self.default_request::<search::Request>();
+        req.request.category_cd = category::LIVE_PERFORMANCE.id.0;
+        req
+    }
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Series> {

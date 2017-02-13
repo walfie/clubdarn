@@ -12,6 +12,8 @@ pub struct ArtistId(pub i32);
 pub struct Artist {
     pub id: ArtistId,
     pub name: String,
+    #[serde(rename = "firstKana", skip_serializing_if = "Option::is_none")]
+    pub first_kana: Option<char>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -27,13 +29,15 @@ pub struct Song {
     pub series: Option<String>,
     #[serde(rename = "hasVideo", skip_serializing_if = "Not::not")]
     pub has_video: bool,
+    #[serde(rename = "firstKana", skip_serializing_if = "Option::is_none")]
+    pub first_kana: Option<char>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Series {
     pub title: String,
-    #[serde(rename = "firstKana")]
-    pub first_kana: String,
+    #[serde(rename = "firstKana", skip_serializing_if = "Option::is_none")]
+    pub first_kana: Option<char>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -85,23 +89,26 @@ impl<'a, T> From<T> for ArtistId
     }
 }
 
+fn none_if_empty(s: String) -> Option<String> {
+    if s.is_empty() { None } else { Some(s) }
+}
+
+fn first_char(s: String) -> Option<char> {
+    s.chars().next()
+}
+
 impl From<search::Item> for Artist {
     fn from(res: search::Item) -> Self {
         Artist {
             id: res.artist_id.into(),
             name: res.artist_name,
+            first_kana: first_char(res.title_first_kana),
         }
     }
 }
 
 impl From<search::Item> for Song {
     fn from(res: search::Item) -> Self {
-        let series = if res.program_title.is_empty() {
-            None
-        } else {
-            Some(res.program_title)
-        };
-
         let has_video = res.func_anime_picture == "1" || res.func_person_picture == "1";
 
         Song {
@@ -109,11 +116,13 @@ impl From<search::Item> for Song {
             title: res.song_name,
             date_added: Some(res.dist_start), // TODO: DateTime
             lyrics: Some(res.first_bars),
-            series: series,
+            series: none_if_empty(res.program_title),
             has_video: has_video,
+            first_kana: first_char(res.title_first_kana),
             artist: Artist {
                 id: res.artist_id.into(),
                 name: res.artist_name,
+                first_kana: None,
             },
         }
     }
@@ -130,9 +139,11 @@ impl From<exist::Item> for Song {
             lyrics: Some(res.first_bars),
             series: None,
             has_video: has_video,
+            first_kana: None,
             artist: Artist {
                 id: res.artist_id.into(),
                 name: res.artist_name,
+                first_kana: None,
             },
         }
     }
@@ -147,9 +158,11 @@ impl From<recommend::Item> for Song {
             lyrics: None,
             series: None,
             has_video: false,
+            first_kana: first_char(res.d_song_name_yomi),
             artist: Artist {
                 id: res.dam_artist_code.into(),
                 name: res.artist,
+                first_kana: first_char(res.d_artist_name_yomi),
             },
         }
     }
@@ -159,7 +172,7 @@ impl From<search::Item> for Series {
     fn from(res: search::Item) -> Self {
         Series {
             title: res.program_title,
-            first_kana: res.title_first_kana,
+            first_kana: first_char(res.title_first_kana),
         }
     }
 }

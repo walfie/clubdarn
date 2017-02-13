@@ -19,15 +19,19 @@ fn songs_by_title() {
         date_added: Some("20131102".into()),
         lyrics: Some("毎日違うわたしに 気づいてるかな".into()),
         series: None,
+        first_kana: None,
+        has_video: false,
         artist: Artist {
             id: ArtistId(96028),
             name: "りさ、えいみ".into(),
+            first_kana: None,
         },
     };
 
     let expected_response = Paginated {
         page: 1,
-        category_id: Some("020000".into()),
+        artist_category_id: ::category::ARTIST_NAME.id.0.into(),
+        series_category_id: None,
         total_items: 1,
         total_pages: 1,
         items: vec![expected_song],
