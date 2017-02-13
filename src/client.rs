@@ -28,6 +28,29 @@ pub struct Metadata<'a> {
     pub serial_no: Option<&'a str>,
 }
 
+pub struct Pending<'a>(&'a Metadata<'a>);
+
+#[derive(Debug, Serialize)]
+pub struct TitleAndArtist<'a> {
+    pub title: &'a str,
+    pub artist: &'a str,
+}
+
+pub enum MatchType {
+    StartsWith,
+    Contains,
+}
+
+impl From<MatchType> for &'static str {
+    fn from(mt: MatchType) -> Self {
+        match mt {
+            MatchType::StartsWith => "0",
+            MatchType::Contains => "1",
+        }
+    }
+}
+
+
 impl<'a> Client<'a> {
     pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
         let meta = Metadata {
@@ -64,36 +87,16 @@ impl<'a> Client<'a> {
         self
     }
 
-    pub fn artists(&self) -> RequestBuilder<&Metadata, Artist> {
-        self.request_builder(&self.meta)
+    pub fn artists(&self) -> RequestBuilder<Pending, Artist> {
+        self.request_builder(Pending(&self.meta))
     }
 
-    pub fn songs(&self) -> RequestBuilder<&Metadata, Song> {
-        self.request_builder(&self.meta)
+    pub fn songs(&self) -> RequestBuilder<Pending, Song> {
+        self.request_builder(Pending(&self.meta))
     }
 
-    pub fn series(&self) -> RequestBuilder<&Metadata, Series> {
-        self.request_builder(&self.meta)
-    }
-}
-
-#[derive(Debug, Serialize)]
-pub struct TitleAndArtist<'a> {
-    pub title: &'a str,
-    pub artist: &'a str,
-}
-
-pub enum MatchType {
-    StartsWith,
-    Contains,
-}
-
-impl From<MatchType> for &'static str {
-    fn from(mt: MatchType) -> Self {
-        match mt {
-            MatchType::StartsWith => "0",
-            MatchType::Contains => "1",
-        }
+    pub fn series(&self) -> RequestBuilder<Pending, Series> {
+        self.request_builder(Pending(&self.meta))
     }
 }
 
@@ -104,19 +107,19 @@ pub struct RequestBuilder<RequestT, ResponseItemT> {
     response_item_type: PhantomData<ResponseItemT>,
 }
 
-impl<'a, I> RequestBuilder<&'a Metadata<'a>, I> {
+impl<'a, I> RequestBuilder<Pending<'a>, I> {
     fn default_request<R>(&self) -> RequestBuilder<R, I>
         where R: api::Request<'a>
     {
         RequestBuilder {
             http: self.http.clone(),
-            request: R::from_client_metadata(self.request),
+            request: R::from_client_metadata(self.request.0),
             response_item_type: PhantomData,
         }
     }
 }
 
-impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
+impl<'a> RequestBuilder<Pending<'a>, Song> {
     pub fn by_title(&self,
                     title: &'a str,
                     match_type: MatchType)
@@ -229,7 +232,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
     }
 }
 
-impl<'a> RequestBuilder<&'a Metadata<'a>, Artist> {
+impl<'a> RequestBuilder<Pending<'a>, Artist> {
     pub fn by_name(&self,
                    name: &'a str,
                    match_type: MatchType)
@@ -250,7 +253,7 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Artist> {
     }
 }
 
-impl<'a> RequestBuilder<&'a Metadata<'a>, Series> {
+impl<'a> RequestBuilder<Pending<'a>, Series> {
     pub fn by_category_id<T>(&self, category_id: T) -> RequestBuilder<search::Request, Series>
         where T: Into<Cow<'a, str>>
     {
