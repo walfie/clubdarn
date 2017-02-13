@@ -137,9 +137,16 @@ impl<'a> RequestBuilder<&'a Metadata<'a>, Song> {
     }
 
     pub fn by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
+        self.by_artist_in_category_id(id, category::ARTIST_NAME.id.0)
+    }
+
+    pub fn by_artist_in_category_id(&self,
+                                    artist_id: i32,
+                                    category_id: Cow<'a, str>)
+                                    -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
-        req.request.artist_id = Some(id);
-        req.request.category_cd = category::ARTIST_NAME.id.0;
+        req.request.artist_id = Some(artist_id);
+        req.request.category_cd = category_id;
         req
     }
 
