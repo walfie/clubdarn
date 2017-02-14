@@ -23,6 +23,8 @@ pub struct Song {
     pub artist: Artist,
     #[serde(rename = "dateAdded", skip_serializing_if = "Option::is_none")]
     pub date_added: Option<String>,
+    #[serde(rename = "endDate", skip_serializing_if = "Option::is_none")]
+    pub end_date: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lyrics: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,6 +99,25 @@ fn first_char(s: String) -> Option<char> {
     s.chars().next()
 }
 
+// Turns "20170315" into "2017/03/15"
+fn format_date(mut input: String) -> Option<String> {
+    // API returns "99999999" to represent infinity
+    if input.len() != 8 || input == "99999999" {
+        None
+    } else {
+        let mut s: String = input.drain(..4).collect();
+        s.push('/');
+        for i in input.drain(..2) {
+            s.push(i)
+        }
+        s.push('/');
+        for i in input.drain(..2) {
+            s.push(i)
+        }
+        Some(s)
+    }
+}
+
 impl From<search::Item> for Artist {
     fn from(res: search::Item) -> Self {
         Artist {
@@ -114,7 +135,8 @@ impl From<search::Item> for Song {
         Song {
             id: res.req_no.into(),
             title: res.song_name,
-            date_added: Some(res.dist_start), // TODO: DateTime
+            date_added: format_date(res.dist_start),
+            end_date: format_date(res.dist_end),
             lyrics: Some(res.first_bars),
             series: none_if_empty(res.program_title),
             has_video: has_video,
@@ -135,7 +157,8 @@ impl From<exist::Item> for Song {
         Song {
             id: res.req_no.into(),
             title: res.song_name,
-            date_added: Some(res.dist_start), // TODO: DateTime
+            date_added: format_date(res.dist_start),
+            end_date: format_date(res.dist_end),
             lyrics: Some(res.first_bars),
             series: None,
             has_video: has_video,
@@ -155,6 +178,7 @@ impl From<recommend::Item> for Song {
             id: res.request_no.into(),
             title: res.denmoku_contents,
             date_added: None,
+            end_date: None,
             lyrics: None,
             series: None,
             has_video: false,
