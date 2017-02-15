@@ -42,13 +42,8 @@ impl<'a> api::Request<'a> for Request<'a> {
         }
     }
 
-    fn set_serial_no(&mut self, serial_no: &'a str) -> &Self {
-        self.serial = Some(serial_no);
-        self
-    }
-
-    fn unset_serial_no(&mut self) -> &Self {
-        self.serial = None;
+    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self {
+        self.serial = serial_no;
         self
     }
 
@@ -56,7 +51,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         None
     }
 
-    fn get_page(&self) -> i32 {
+    fn page(&self) -> i32 {
         1
     }
 

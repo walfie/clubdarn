@@ -16,10 +16,9 @@ pub trait Request<'a>: Serialize {
     fn url() -> &'a str;
     fn from_client_metadata(meta: &client::Metadata<'a>) -> Self;
 
-    fn set_serial_no(&mut self, serial_no: &'a str) -> &Self;
-    fn unset_serial_no(&mut self) -> &Self;
+    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self;
 
-    fn get_page(&self) -> i32;
+    fn page(&self) -> i32;
     fn set_page(&mut self, page_num: i32) -> &Self;
 
     fn category(&self) -> Option<Cow<'a, str>>;

@@ -186,18 +186,18 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         self.by_category_id(category.id.0)
     }
 
-    pub fn by_ids(&self, ids: Vec<i32>) -> RequestBuilder<exist::Request, Song> {
+    pub fn by_ids(&self, ids: &[i32]) -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
         req
     }
 
     pub fn by_id(&self, id: i32) -> RequestBuilder<exist::Request, Song> {
-        self.by_ids(vec![id])
+        self.by_ids(&[id])
     }
 
     pub fn by_titles_and_artists(&self,
-                                 titles_and_artists: Vec<TitleAndArtist<'a>>)
+                                 titles_and_artists: &[TitleAndArtist<'a>])
                                  -> RequestBuilder<exist::Request, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
@@ -215,7 +215,7 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
             title: title,
             artist: artist,
         };
-        self.by_titles_and_artists(vec![info])
+        self.by_titles_and_artists(&[info])
     }
 
     pub fn similar_to(&self, song_id: i32) -> RequestBuilder<recommend::Request, Song> {
@@ -283,7 +283,7 @@ impl<'a, R, I> RequestBuilder<R, I>
         self
     }
 
-    pub fn set_serial_no(&mut self, serial_no: &'a str) -> &Self {
+    pub fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self {
         self.request.set_serial_no(serial_no);
         self
     }
@@ -323,7 +323,7 @@ impl<'a, R, I> RequestBuilder<R, I>
         // Doing this weird `total_items: 0` thing because `items()` consumes `response`
         let total_items = response.total_items();
         let mut body = Paginated {
-            page: self.request.get_page(),
+            page: self.request.page(),
             artist_category_id: artist_category_id,
             series_category_id: series_category_id,
             total_items: 0,

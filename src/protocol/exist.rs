@@ -76,17 +76,12 @@ impl<'a> api::Request<'a> for Request<'a> {
         None
     }
 
-    fn set_serial_no(&mut self, serial_no: &'a str) -> &Self {
-        self.serial_no = Some(serial_no);
+    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self {
+        self.serial_no = serial_no;
         self
     }
 
-    fn unset_serial_no(&mut self) -> &Self {
-        self.serial_no = None;
-        self
-    }
-
-    fn get_page(&self) -> i32 {
+    fn page(&self) -> i32 {
         1
     }
 
