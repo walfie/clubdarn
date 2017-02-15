@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
 
 use client;
 
@@ -21,7 +20,7 @@ pub trait Request<'a>: Serialize {
     fn page(&self) -> i32;
     fn set_page(&mut self, page_num: i32) -> &Self;
 
-    fn category(&self) -> Option<Cow<'a, str>>;
+    fn category(&'a self) -> Option<&'a str>;
 }
 
 pub trait Response: Deserialize {

@@ -1,7 +1,6 @@
 extern crate serde_json;
 extern crate reqwest;
 
-use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
@@ -145,7 +144,7 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
 
     pub fn by_artist_in_category_id(&self,
                                     artist_id: i32,
-                                    category_id: Cow<'a, str>)
+                                    category_id: &'a str)
                                     -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.artist_id = Some(artist_id);
@@ -153,30 +152,26 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         req
     }
 
-    pub fn by_series_in_category_id<T>(&self,
-                                       title: &'a str,
-                                       category_id: T)
-                                       -> RequestBuilder<search::Request, Song>
-        where T: Into<Cow<'a, str>>
-    {
+    pub fn by_series_in_category_id(&self,
+                                    title: &'a str,
+                                    category_id: &'a str)
+                                    -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.program_title = Some(title);
-        req.request.category_cd = category_id.into();
+        req.request.category_cd = category_id;
         req
     }
 
-    pub fn by_series<T>(&self,
-                        title: &'a str,
-                        category: Category<SeriesCategory>)
-                        -> RequestBuilder<search::Request, Song> {
+    pub fn by_series(&self,
+                     title: &'a str,
+                     category: Category<SeriesCategory>)
+                     -> RequestBuilder<search::Request, Song> {
         self.by_series_in_category_id(title, category.id.0)
     }
 
-    pub fn by_category_id<T>(&self, category_id: T) -> RequestBuilder<search::Request, Song>
-        where T: Into<Cow<'a, str>>
-    {
+    pub fn by_category_id(&self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
-        req.request.category_cd = category_id.into();
+        req.request.category_cd = category_id;
         req
     }
 
@@ -260,11 +255,9 @@ impl<'a> RequestBuilder<Pending<'a>, Artist> {
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Series> {
-    pub fn by_category_id<T>(&self, category_id: T) -> RequestBuilder<search::Request, Series>
-        where T: Into<Cow<'a, str>>
-    {
+    pub fn by_category_id(&self, category_id: &'a str) -> RequestBuilder<search::Request, Series> {
         let mut req = self.default_request::<search::Request>();
-        req.request.category_cd = category_id.into();
+        req.request.category_cd = category_id;
         req
     }
 
@@ -293,7 +286,7 @@ impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>,
           I: From<<R::ResponseType as api::Response>::ItemType>
 {
-    pub fn send(&self) -> Paginated<I> {
+    pub fn send(&'a self) -> Paginated<I> {
         use protocol::api::Response;
 
         let request = self.http.post(R::url());

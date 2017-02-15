@@ -1,8 +1,7 @@
-use std::borrow::Cow;
 use std::marker::PhantomData;
 
 #[derive(Serialize)]
-pub struct CategoryId<'a>(pub Cow<'a, str>);
+pub struct CategoryId<'a>(pub &'a str);
 
 pub trait CategoryType {}
 
@@ -39,7 +38,7 @@ macro_rules! count_items {
 macro_rules! category {
     ($cat_type:ident, $cat_id:expr, $cat_name:ident, $desc_ja:expr, $desc_en:expr) => {
         pub const $cat_name: Category<$cat_type> = Category {
-            id: CategoryId(::std::borrow::Cow::Borrowed($cat_id)),
+            id: CategoryId($cat_id),
             description: Description {
                 en: $desc_en,
                 ja: $desc_ja,
@@ -124,7 +123,7 @@ categories! [
     ],
 ];
 
-pub fn series_category<'a>(input: Cow<'a, str>) -> Option<Category<SeriesCategory>> {
+pub fn series_category<'a>(input: &'a str) -> Option<Category<SeriesCategory>> {
     if input == new_songs::ANIME_GAME.id.0 || input == series::ANIME.id.0 ||
        input == ranking::ANIME_TOKUSATSU.id.0 {
         Some(series::ANIME)
@@ -137,7 +136,7 @@ pub fn series_category<'a>(input: Cow<'a, str>) -> Option<Category<SeriesCategor
     }
 }
 
-pub fn artist_category<'a>(input: Cow<'a, str>) -> Category<ArtistCategory> {
+pub fn artist_category<'a>(input: &'a str) -> Category<ArtistCategory> {
     if input == LIVE_PERFORMANCE.id.0 {
         LIVE_PERFORMANCE
     } else {

@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use client;
 use super::*;
 use super::super::util::*;
@@ -21,7 +19,7 @@ pub struct Request<'a> {
 
     pub page: i32,
     #[serde(rename = "categoryCd")]
-    pub category_cd: Cow<'a, str>,
+    pub category_cd: &'a str,
 
     #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
     pub artist_id: Option<i32>,
@@ -68,8 +66,8 @@ impl<'a> api::Request<'a> for Request<'a> {
         self
     }
 
-    fn category(&self) -> Option<Cow<'a, str>> {
-        Some(self.category_cd.clone())
+    fn category(&'a self) -> Option<&'a str> {
+        Some(&self.category_cd)
     }
 
     fn page(&self) -> i32 {

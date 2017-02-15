@@ -47,7 +47,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         self
     }
 
-    fn category(&self) -> Option<Cow<'a, str>> {
+    fn category(&'a self) -> Option<&'a str> {
         None
     }
 

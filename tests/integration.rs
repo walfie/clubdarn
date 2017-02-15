@@ -16,7 +16,8 @@ fn songs_by_title() {
     let expected_song = Song {
         id: SongId(366869),
         title: "Wake up my music".into(),
-        date_added: Some("20131102".into()),
+        date_added: Some("2013/11/02".into()),
+        end_date: None,
         lyrics: Some("毎日違うわたしに 気づいてるかな".into()),
         series: None,
         first_kana: None,
@@ -40,6 +41,6 @@ fn songs_by_title() {
     assert_eq!(response, expected_response);
 
     // ... but not on Premier DAM
-    let response_empty = request.set_serial_no("AB316238").send();
+    let response_empty = request.set_serial_no(Some("AB316238")).send();
     assert_eq!(response_empty.items.is_empty(), true);
 }

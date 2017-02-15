@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use client;
 use super::*;
 
@@ -72,7 +70,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         }
     }
 
-    fn category(&self) -> Option<Cow<'a, str>> {
+    fn category(&'a self) -> Option<&'a str> {
         None
     }
 

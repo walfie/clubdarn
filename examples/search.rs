@@ -15,7 +15,7 @@ fn main() {
 
     pretty_print(&client.artists().starting_with("aikatsu").send());
 
-    pretty_print(&client.songs().by_ids(vec![369073]).send());
+    pretty_print(&client.songs().by_id(369073).send());
 
     pretty_print(&client.songs()
         .by_title_and_artist("wake up my music", "りさ、えいみ")
