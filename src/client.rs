@@ -320,7 +320,7 @@ impl<'a, R, I> RequestBuilder<R, I>
             .and_then(category::series_category)
             .map(|c| c.id.0.into());
 
-        // Doing this weird `total_items: 0` thing because `items()` consumes `response`
+        // Doing this weird `total_items: 0` thing because `take_items()` consumes `response`
         let total_items = response.total_items();
         let mut body = Paginated {
             page: self.request.page(),
@@ -328,7 +328,7 @@ impl<'a, R, I> RequestBuilder<R, I>
             series_category_id: series_category_id,
             total_items: 0,
             total_pages: response.total_pages(),
-            items: response.items().into_iter().map(I::from).collect(),
+            items: response.take_items().into_iter().map(I::from).collect(),
         };
 
         body.total_items = total_items.unwrap_or(body.items.len() as i32);

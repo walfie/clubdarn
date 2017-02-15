@@ -69,7 +69,7 @@ pub struct Response {
 impl api::Response for Response {
     type ItemType = Item;
 
-    fn items(self) -> Vec<Item> {
+    fn take_items(self) -> Vec<Item> {
         self.list
     }
 

@@ -27,8 +27,7 @@ pub trait Request<'a>: Serialize {
 pub trait Response: Deserialize {
     type ItemType;
 
-    // TODO: Maybe make this not consume self
-    fn items(self) -> Vec<Self::ItemType>;
+    fn take_items(self) -> Vec<Self::ItemType>;
     fn total_pages(&self) -> i32;
     fn total_items(&self) -> Option<i32>;
 }
