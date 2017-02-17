@@ -123,7 +123,7 @@ categories! [
     ],
 ];
 
-pub fn series_category<'a>(input: &'a str) -> Option<Category<SeriesCategory>> {
+pub fn series_category(input: &str) -> Option<Category<SeriesCategory>> {
     if input == new_songs::ANIME_GAME.id.0 || input == series::ANIME.id.0 ||
        input == ranking::ANIME_TOKUSATSU.id.0 {
         Some(series::ANIME)
@@ -136,7 +136,7 @@ pub fn series_category<'a>(input: &'a str) -> Option<Category<SeriesCategory>> {
     }
 }
 
-pub fn artist_category<'a>(input: &'a str) -> Category<ArtistCategory> {
+pub fn artist_category(input: &str) -> Category<ArtistCategory> {
     if input == LIVE_PERFORMANCE.id.0 {
         LIVE_PERFORMANCE
     } else {

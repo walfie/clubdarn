@@ -67,7 +67,7 @@ impl<'a> api::Request<'a> for Request<'a> {
     }
 
     fn category(&'a self) -> Option<&'a str> {
-        Some(&self.category_cd)
+        Some(self.category_cd)
     }
 
     fn page(&self) -> i32 {
