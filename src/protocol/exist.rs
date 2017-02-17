@@ -1,5 +1,5 @@
-use client;
 use super::*;
+use client;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamIsExistServlet";
 

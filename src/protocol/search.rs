@@ -1,6 +1,6 @@
-use client;
 use super::*;
 use super::super::util::*;
+use client;
 
 pub const API_URL: &'static str = "https://denmoku.clubdam.com/dkdenmoku/DkDamSearchServlet";
 

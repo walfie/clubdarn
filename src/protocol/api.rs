@@ -1,6 +1,7 @@
-use serde::{Deserialize, Serialize};
+
 
 use client;
+use serde::{Deserialize, Serialize};
 
 pub enum RequestType {
     Json,

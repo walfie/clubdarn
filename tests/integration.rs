@@ -4,7 +4,7 @@ use clubdarn::*;
 
 #[test]
 fn songs_by_title() {
-    let client = Client::default();
+    let client = Client::default().unwrap();
 
     // TODO: Make it so `.songs()` doesn't need to live as long as `starting_with(...)`
     let song_request = client.songs();
@@ -38,9 +38,9 @@ fn songs_by_title() {
         items: vec![expected_song],
     };
 
-    assert_eq!(response, expected_response);
+    assert_eq!(response.unwrap(), expected_response);
 
     // ... but not on Premier DAM
-    let response_empty = request.set_serial_no(Some("AB316238")).send();
-    assert_eq!(response_empty.items.is_empty(), true);
+    let response_empty = request.set_serial_no(Some("AB316238")).send().unwrap();
+    assert!(response_empty.items.is_empty());
 }

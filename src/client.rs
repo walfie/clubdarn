@@ -1,13 +1,13 @@
 extern crate serde_json;
 extern crate reqwest;
 
-use std::marker::PhantomData;
-use std::sync::Arc;
-
 use category;
 use category::*;
+use error::*;
 use model::*;
 use protocol::{api, exist, recommend, search};
+use std::marker::PhantomData;
+use std::sync::Arc;
 
 const DEFAULT_APP_VER: &'static str = "1.2.0"; // Denmoku Mini app version
 const DEFAULT_DEVICE_ID: &'static str = "";
@@ -51,7 +51,11 @@ impl From<MatchType> for &'static str {
 
 
 impl<'a> Client<'a> {
-    pub fn new(app_ver: &'a str, device_id: &'a str, device_nm: &'a str, os_ver: &'a str) -> Self {
+    pub fn new(app_ver: &'a str,
+               device_id: &'a str,
+               device_nm: &'a str,
+               os_ver: &'a str)
+               -> Result<Self> {
         let meta = Metadata {
             app_ver: app_ver,
             device_id: device_id,
@@ -60,13 +64,15 @@ impl<'a> Client<'a> {
             serial_no: None,
         };
 
-        Client {
-            http: Arc::new(reqwest::Client::new().unwrap()),
+        let http = reqwest::Client::new()?;
+
+        Ok(Client {
+            http: Arc::new(http),
             meta: meta,
-        }
+        })
     }
 
-    pub fn default() -> Self {
+    pub fn default() -> Result<Self> {
         Self::new(DEFAULT_APP_VER,
                   DEFAULT_DEVICE_ID,
                   DEFAULT_DEVICE_NM,
@@ -286,7 +292,7 @@ impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>,
           I: From<<R::ResponseType as api::Response>::ItemType>
 {
-    pub fn send(&'a self) -> Paginated<I> {
+    pub fn send(&'a self) -> Result<Paginated<I>> {
         use protocol::api::Response;
 
         let request = self.http.post(R::url());
@@ -296,11 +302,7 @@ impl<'a, R, I> RequestBuilder<R, I>
             api::RequestType::FormData => request.form(&self.request),
         };
 
-        // TODO: Error handling
-        let response: R::ResponseType = request_body.send()
-            .unwrap()
-            .json()
-            .unwrap();
+        let response: R::ResponseType = request_body.send()?.json()?;
 
         let artist_category_id = self.request
             .category()
@@ -326,6 +328,6 @@ impl<'a, R, I> RequestBuilder<R, I>
 
         body.total_items = total_items.unwrap_or(body.items.len() as i32);
 
-        body
+        Ok(body)
     }
 }
