@@ -1,0 +1,21 @@
+[package]
+name = "clubdarn-cli"
+version = "0.1.0"
+authors = ["Walfie <walfington@gmail.com>"]
+license = "MIT/Apache-2.0"
+homepage = "https://github.com/walfie/clubdarn"
+repository = "https://github.com/walfie/clubdarn"
+
+[dependencies]
+clippy = {version = "*", optional = true}
+clubdarn = { version = "0.1", path = "../clubdarn" }
+error-chain = "0.9"
+serde = "0.9"
+serde_json = "0.9"
+
+[features]
+default = []
+
+[[bin]]
+name = "clubdarn"
+
