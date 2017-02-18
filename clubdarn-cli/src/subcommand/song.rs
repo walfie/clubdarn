@@ -13,6 +13,7 @@ pub fn app() -> App<'static, 'static> {
         .arg(Arg::with_name("query")
             .help("The query to match on")
             .value_name("QUERY")
+            .multiple(true)
             .required(true))
         .with_global_args();
 
@@ -30,16 +31,73 @@ pub fn app() -> App<'static, 'static> {
             .long("live"))
         .with_global_args();
 
+
+    // TODO: Put in a common place (also used by root series subcommand)
+    let series_categories = (&clubdarn::category::series::CATEGORIES)
+        .iter()
+        .map(|c| c.id.0)
+        .collect::<Vec<&str>>();
+
+    let series = SubCommand::with_name("series")
+        .about("Find songs from a series")
+        .arg(Arg::with_name("series-title")
+            .help("The series title")
+            .value_name("SERIES_TITLE")
+            .multiple(true)
+            .required(true))
+        .arg(Arg::with_name("category-id")
+            .help("Category ID of the series")
+            .long("category-id")
+            .value_name("CATEGORY_ID")
+            .required(true)
+            .possible_values(&series_categories))
+        .with_global_args();
+
+    let category = SubCommand::with_name("category")
+        .about("Find songs in category")
+        .arg(Arg::with_name("category-id")
+            .help("Category ID")
+            .value_name("CATEGORY_ID")
+            .required(true))
+        .with_global_args();
+
+    let id = SubCommand::with_name("id")
+        .about("Find songs with ID")
+        .arg(Arg::with_name("song-id")
+            .help("ID without hyphen (e.g., 360715)")
+            .value_name("SONG_ID")
+            .multiple(true)
+            .required(true))
+        .with_global_args();
+
+    let similar = SubCommand::with_name("similar")
+        .about("Find songs similar to the given song ID")
+        .arg(Arg::with_name("song-id")
+            .help("ID without hyphen (e.g., 360715)")
+            .value_name("SONG_ID")
+            .required(true))
+        .with_global_args();
+
     SubCommand::with_name("song")
         .about("Find songs")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(title)
         .subcommand(artist)
+        .subcommand(series)
+        .subcommand(category)
+        .subcommand(id)
+        .subcommand(similar)
+}
+
+fn collect_query(matches: &ArgMatches, arg_name: &str) -> String {
+    matches.values_of(arg_name).unwrap().collect::<Vec<_>>().join(" ")
 }
 
 pub fn run(matches: &ArgMatches) -> Result<()> {
     let context = app::Context::from_matches(matches)?;
     let songs = context.client.songs();
+
+    let query: String;
 
     let mut request = match matches.subcommand() {
         ("title", Some(matches)) => {
@@ -49,7 +107,9 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
                 clubdarn::MatchType::Contains
             };
 
-            songs.by_title(matches.value_of("query").unwrap(), match_type)
+            query = collect_query(matches, "query");
+
+            songs.by_title(&query, match_type)
         }
         ("artist", Some(matches)) => {
             let artist_id = value_t!(matches, "artist-id", i32)?;
@@ -59,6 +119,28 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
             } else {
                 songs.by_artist_id(artist_id)
             }
+        }
+        ("series", Some(matches)) => {
+            query = collect_query(matches, "series-title");
+            let category_id = matches.value_of("category_id").unwrap();
+            songs.by_series_in_category_id(&query, category_id)
+        }
+        ("category", Some(matches)) => {
+            let category_id = matches.value_of("category_id").unwrap();
+            songs.by_category_id(category_id)
+        }
+        // Looking up a song by ID uses a different request type,
+        // which would cause these match arms to have a incompatible
+        // types. We use an explicit returns here to avoid that.
+        ("id", Some(matches)) => {
+            let ids = values_t!(matches, "song-id", i32)?;
+            let result = songs.by_ids(&ids).set_page(context.page).send()?;
+            return context.printer.stdout(&result);
+        }
+        ("similar", Some(matches)) => {
+            let id = value_t!(matches, "song-id", i32)?;
+            let result = songs.similar_to(id).set_page(context.page).send()?;
+            return context.printer.stdout(&result);
         }
         (other, _) => Err(format!("unrecognized subcommand {}", other))?,
     };
