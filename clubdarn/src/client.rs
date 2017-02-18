@@ -9,11 +9,6 @@ use protocol::{api, exist, recommend, search};
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-const DEFAULT_APP_VER: &'static str = "1.2.0"; // Denmoku Mini app version
-const DEFAULT_DEVICE_ID: &'static str = "";
-const DEFAULT_DEVICE_NM: &'static str = env!("CARGO_PKG_NAME");
-const DEFAULT_OS_VER: &'static str = env!("CARGO_PKG_VERSION");
-
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
     meta: Metadata<'a>,
@@ -25,6 +20,18 @@ pub struct Metadata<'a> {
     pub device_nm: &'a str,
     pub os_ver: &'a str,
     pub serial_no: Option<&'a str>,
+}
+
+impl<'a> Default for Metadata<'a> {
+    fn default() -> Self {
+        Metadata {
+            app_ver: "1.2.0", // Denmoku Mini app version
+            device_id: "",
+            device_nm: env!("CARGO_PKG_NAME"),
+            os_ver: env!("CARGO_PKG_VERSION"),
+            serial_no: None,
+        }
+    }
 }
 
 pub struct Pending<'a>(&'a Metadata<'a>);
@@ -51,19 +58,7 @@ impl From<MatchType> for &'static str {
 
 
 impl<'a> Client<'a> {
-    pub fn new(app_ver: &'a str,
-               device_id: &'a str,
-               device_nm: &'a str,
-               os_ver: &'a str)
-               -> Result<Self> {
-        let meta = Metadata {
-            app_ver: app_ver,
-            device_id: device_id,
-            device_nm: device_nm,
-            os_ver: os_ver,
-            serial_no: None,
-        };
-
+    pub fn new(meta: Metadata<'a>) -> Result<Self> {
         let http = reqwest::Client::new()?;
 
         Ok(Client {
@@ -73,10 +68,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn default() -> Result<Self> {
-        Self::new(DEFAULT_APP_VER,
-                  DEFAULT_DEVICE_ID,
-                  DEFAULT_DEVICE_NM,
-                  DEFAULT_OS_VER)
+        Self::new(Default::default())
     }
 
     fn request_builder<T, U>(&self, req: T) -> RequestBuilder<T, U> {
@@ -87,7 +79,7 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn default_serial_no(mut self, serial_no: Option<&'a str>) -> Self {
+    pub fn set_default_serial_no(mut self, serial_no: Option<&'a str>) -> Self {
         self.meta.serial_no = serial_no;
         self
     }
@@ -125,7 +117,7 @@ impl<'a, I> RequestBuilder<Pending<'a>, I> {
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Song> {
-    pub fn by_title(&self,
+    pub fn by_title(self,
                     title: &'a str,
                     match_type: MatchType)
                     -> RequestBuilder<search::Request, Song> {
@@ -136,19 +128,19 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         req
     }
 
-    pub fn starting_with(&self, title: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn starting_with(self, title: &'a str) -> RequestBuilder<search::Request, Song> {
         self.by_title(title, MatchType::StartsWith)
     }
 
-    pub fn containing(&self, title: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn containing(self, title: &'a str) -> RequestBuilder<search::Request, Song> {
         self.by_title(title, MatchType::Contains)
     }
 
-    pub fn by_artist_id(&self, id: i32) -> RequestBuilder<search::Request, Song> {
+    pub fn by_artist_id(self, id: i32) -> RequestBuilder<search::Request<'a>, Song> {
         self.by_artist_in_category_id(id, category::ARTIST_NAME.id.0)
     }
 
-    pub fn by_artist_in_category_id(&self,
+    pub fn by_artist_in_category_id(self,
                                     artist_id: i32,
                                     category_id: &'a str)
                                     -> RequestBuilder<search::Request, Song> {
@@ -158,48 +150,48 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         req
     }
 
-    pub fn by_series_in_category_id(&self,
+    pub fn by_series_in_category_id(self,
                                     title: &'a str,
                                     category_id: &'a str)
-                                    -> RequestBuilder<search::Request, Song> {
+                                    -> RequestBuilder<search::Request<'a>, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.program_title = Some(title);
         req.request.category_cd = category_id;
         req
     }
 
-    pub fn by_series(&self,
+    pub fn by_series(self,
                      title: &'a str,
                      category: Category<SeriesCategory>)
                      -> RequestBuilder<search::Request, Song> {
         self.by_series_in_category_id(title, category.id.0)
     }
 
-    pub fn by_category_id(&self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
+    pub fn by_category_id(self, category_id: &'a str) -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
         req.request.category_cd = category_id;
         req
     }
 
-    pub fn by_category(&self,
+    pub fn by_category(self,
                        category: ::category::Category<SongCategory>)
-                       -> RequestBuilder<search::Request, Song> {
+                       -> RequestBuilder<search::Request<'a>, Song> {
         self.by_category_id(category.id.0)
     }
 
-    pub fn by_ids(&self, ids: &[i32]) -> RequestBuilder<exist::Request, Song> {
+    pub fn by_ids(self, ids: &[i32]) -> RequestBuilder<exist::Request<'a>, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
         req
     }
 
-    pub fn by_id(&self, id: i32) -> RequestBuilder<exist::Request, Song> {
+    pub fn by_id(self, id: i32) -> RequestBuilder<exist::Request<'a>, Song> {
         self.by_ids(&[id])
     }
 
-    pub fn by_titles_and_artists(&self,
+    pub fn by_titles_and_artists(self,
                                  titles_and_artists: &[TitleAndArtist<'a>])
-                                 -> RequestBuilder<exist::Request, Song> {
+                                 -> RequestBuilder<exist::Request<'a>, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
             .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
@@ -208,10 +200,10 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         req
     }
 
-    pub fn by_title_and_artist(&self,
+    pub fn by_title_and_artist(self,
                                title: &'a str,
                                artist: &'a str)
-                               -> RequestBuilder<exist::Request, Song> {
+                               -> RequestBuilder<exist::Request<'a>, Song> {
         let info = TitleAndArtist {
             title: title,
             artist: artist,
@@ -219,7 +211,7 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         self.by_titles_and_artists(&[info])
     }
 
-    pub fn similar_to(&self, song_id: i32) -> RequestBuilder<recommend::Request, Song> {
+    pub fn similar_to(self, song_id: i32) -> RequestBuilder<recommend::Request<'a>, Song> {
         let mut req = self.default_request::<recommend::Request>();
         let mut song_id_str = song_id.to_string();
 
@@ -234,7 +226,7 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Artist> {
-    pub fn by_name(&self,
+    pub fn by_name(self,
                    name: &'a str,
                    match_type: MatchType)
                    -> RequestBuilder<search::Request, Artist> {
@@ -245,15 +237,15 @@ impl<'a> RequestBuilder<Pending<'a>, Artist> {
         req
     }
 
-    pub fn starting_with(&self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
+    pub fn starting_with(self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
         self.by_name(name, MatchType::StartsWith)
     }
 
-    pub fn containing(&self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
+    pub fn containing(self, name: &'a str) -> RequestBuilder<search::Request, Artist> {
         self.by_name(name, MatchType::Contains)
     }
 
-    pub fn live_performance(&self) -> RequestBuilder<search::Request, Artist> {
+    pub fn live_performance(self) -> RequestBuilder<search::Request<'a>, Artist> {
         let mut req = self.default_request::<search::Request>();
         req.request.category_cd = category::LIVE_PERFORMANCE.id.0;
         req
@@ -261,15 +253,17 @@ impl<'a> RequestBuilder<Pending<'a>, Artist> {
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Series> {
-    pub fn by_category_id(&self, category_id: &'a str) -> RequestBuilder<search::Request, Series> {
+    pub fn by_category_id(self,
+                          category_id: &'a str)
+                          -> RequestBuilder<search::Request<'a>, Series> {
         let mut req = self.default_request::<search::Request>();
         req.request.category_cd = category_id;
         req
     }
 
-    pub fn by_category<T>(&self,
+    pub fn by_category<T>(self,
                           category: Category<SeriesCategory>)
-                          -> RequestBuilder<search::Request, Series> {
+                          -> RequestBuilder<search::Request<'a>, Series> {
         self.by_category_id(category.id.0)
     }
 }

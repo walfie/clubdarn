@@ -18,6 +18,6 @@ mod client;
 
 pub mod category;
 pub mod error;
-pub use client::{Client, MatchType, TitleAndArtist, RequestBuilder};
+pub use client::{Client, Metadata, MatchType, TitleAndArtist, RequestBuilder};
 pub use error::{Error, Result};
 pub use model::{Artist, ArtistId, Song, SongId, Series, Paginated};
