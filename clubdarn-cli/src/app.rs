@@ -7,10 +7,7 @@ use subcommand;
 
 pub fn root() -> App<'static, 'static> {
     let subcommands =
-        vec![subcommand::song::app(), subcommand::series::app(), subcommand::artist::app()]
-            .into_iter()
-            .map(|s| s.with_global_args())
-            .collect::<Vec<App>>();
+        vec![subcommand::song::app(), subcommand::series::app(), subcommand::artist::app()];
 
     app_from_crate!()
         .about(crate_description!())
@@ -48,6 +45,11 @@ pub struct Context<'a> {
 
 impl<'a> Context<'a> {
     pub fn from_matches(matches: &'a ArgMatches) -> Result<Self> {
+        // Take the ArgMatches from the deepest level of subcommands
+        if let (_, Some(subcommand_matches)) = matches.subcommand() {
+            return Self::from_matches(subcommand_matches);
+        }
+
         let printer = Printer { compact: matches.is_present("compact-output") };
         let page = value_t!(matches, "page", i32)?;
 
@@ -69,7 +71,7 @@ impl<'a> Context<'a> {
     }
 }
 
-trait AppExt {
+pub trait AppExt {
     fn with_global_args(self) -> Self;
 }
 

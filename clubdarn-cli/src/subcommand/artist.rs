@@ -1,42 +1,51 @@
 use app;
-use clap::{App, Arg, ArgGroup, ArgMatches, SubCommand};
+use app::AppExt;
+use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
+use clubdarn;
 use error::*;
 
 pub fn app() -> App<'static, 'static> {
+    let name = SubCommand::with_name("name")
+        .about("Find artists by name")
+        .arg(Arg::with_name("starts-with")
+            .help("Require that the match occurs at the beginning of the artist name")
+            .long("starts-with"))
+        .arg(Arg::with_name("query")
+            .help("The query to match on")
+            .value_name("QUERY")
+            .required(true))
+        .with_global_args();
+
+    let live = SubCommand::with_name("live")
+        .about("Find artists with live performances")
+        .with_global_args();
+
     SubCommand::with_name("artist")
         .about("Find artists")
-        .group(ArgGroup::with_name("filter")
-            .required(true)
-            .args(&["starts-with", "contains", "live"]))
-        .arg(Arg::with_name("starts-with")
-            .help("Find artists with names that start with <QUERY>")
-            .long("starts-with")
-            .value_name("QUERY")
-            .takes_value(true))
-        .arg(Arg::with_name("contains")
-            .help("Find artists with names containing <QUERY>")
-            .long("contains")
-            .value_name("QUERY")
-            .takes_value(true))
-        .arg(Arg::with_name("live")
-            .help("List artists with live performances")
-            .long("live"))
+        .subcommand(name)
+        .subcommand(live)
+        .setting(AppSettings::SubcommandRequiredElseHelp)
 }
 
 pub fn run(matches: &ArgMatches) -> Result<()> {
     let context = app::Context::from_matches(matches)?;
     let artists = context.client.artists();
 
-    let result = if let Some(q) = matches.value_of("starts-with") {
-            artists.starting_with(q)
-        } else if let Some(q) = matches.value_of("contains") {
-            artists.containing(q)
-        } else if matches.is_present("live") {
-            artists.live_performance()
-        } else {
-            Err("Unknown state")?
-        }.set_page(context.page)
-        .send()?;
+    let mut request = match matches.subcommand() {
+        ("name", Some(matches)) => {
+            let match_type = if matches.is_present("starts-with") {
+                clubdarn::MatchType::StartsWith
+            } else {
+                clubdarn::MatchType::Contains
+            };
+
+            artists.by_name(matches.value_of("query").unwrap(), match_type)
+        }
+        ("live", Some(_)) => artists.live_performance(),
+        (other, _) => Err(format!("unrecognized subcommand {}", other))?,
+    };
+
+    let result = request.set_page(context.page).send()?;
 
     context.printer.stdout(&result)
 }

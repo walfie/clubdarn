@@ -1,4 +1,5 @@
 use app;
+use app::AppExt;
 use clap::{App, Arg, ArgMatches, SubCommand};
 use clubdarn;
 use error::*;
@@ -9,13 +10,14 @@ pub fn app() -> App<'static, 'static> {
         .map(|c| c.id.0)
         .collect::<Vec<&str>>();
 
+    // TODO: Use anime/tokusatsu/video rather than numerical IDs
     SubCommand::with_name("series")
         .about("List series by category ID")
         .arg(Arg::with_name("category-id")
             .required(true)
-            .index(1)
             .value_name("CATEGORY_ID")
             .possible_values(&all_categories))
+        .with_global_args()
 }
 
 pub fn run(matches: &ArgMatches) -> Result<()> {
