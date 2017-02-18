@@ -13,6 +13,7 @@ pub fn app() -> App<'static, 'static> {
         .arg(Arg::with_name("query")
             .help("The query to match on")
             .value_name("QUERY")
+            .empty_values(false)
             .required(true))
         .with_global_args();
 

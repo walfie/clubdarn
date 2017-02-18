@@ -117,6 +117,7 @@ impl<'a, I> RequestBuilder<Pending<'a>, I> {
 }
 
 impl<'a> RequestBuilder<Pending<'a>, Song> {
+    // TODO: Require that strings are non-empty
     pub fn by_title(self,
                     title: &'a str,
                     match_type: MatchType)

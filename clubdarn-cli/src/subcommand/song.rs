@@ -14,6 +14,7 @@ pub fn app() -> App<'static, 'static> {
             .help("The query to match on")
             .value_name("QUERY")
             .multiple(true)
+            .empty_values(false)
             .required(true))
         .with_global_args();
 
@@ -54,7 +55,7 @@ pub fn app() -> App<'static, 'static> {
         .with_global_args();
 
     let category = SubCommand::with_name("category")
-        .about("Find songs in category")
+        .about("List songs from category")
         .arg(Arg::with_name("category-id")
             .help("Category ID")
             .value_name("CATEGORY_ID")
@@ -78,6 +79,26 @@ pub fn app() -> App<'static, 'static> {
             .required(true))
         .with_global_args();
 
+    let exact = SubCommand::with_name("exact")
+        .about("Find songs with title/artist combination")
+        .arg(Arg::with_name("song-title")
+            .help("Song title")
+            .long("title")
+            .short("t")
+            .value_name("SONG_TITLE")
+            .multiple(true)
+            .number_of_values(1)
+            .required(true))
+        .arg(Arg::with_name("artist-name")
+            .help("Artist name")
+            .long("artist")
+            .short("a")
+            .value_name("ARTIST_NAME")
+            .multiple(true)
+            .number_of_values(1)
+            .required(true))
+        .with_global_args();
+
     SubCommand::with_name("song")
         .about("Find songs")
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -87,6 +108,7 @@ pub fn app() -> App<'static, 'static> {
         .subcommand(category)
         .subcommand(id)
         .subcommand(similar)
+        .subcommand(exact)
 }
 
 fn collect_query(matches: &ArgMatches, arg_name: &str) -> String {
@@ -140,6 +162,22 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
         ("similar", Some(matches)) => {
             let id = value_t!(matches, "song-id", i32)?;
             let result = songs.similar_to(id).set_page(context.page).send()?;
+            return context.printer.stdout(&result);
+        }
+        ("exact", Some(matches)) => {
+            let titles = matches.values_of("song-title").unwrap();
+            let artists = matches.values_of("artist-name").unwrap();
+
+            let zipped = titles.zip(artists)
+                .map(|(title, artist)| {
+                    clubdarn::TitleAndArtist {
+                        title: title,
+                        artist: artist,
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            let result = songs.by_titles_and_artists(&zipped).set_page(context.page).send()?;
             return context.printer.stdout(&result);
         }
         (other, _) => Err(format!("unrecognized subcommand {}", other))?,
