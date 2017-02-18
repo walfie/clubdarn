@@ -22,9 +22,9 @@ pub fn app() -> App<'static, 'static> {
 
     SubCommand::with_name("artist")
         .about("Find artists")
+        .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(name)
         .subcommand(live)
-        .setting(AppSettings::SubcommandRequiredElseHelp)
 }
 
 pub fn run(matches: &ArgMatches) -> Result<()> {
