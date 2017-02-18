@@ -29,31 +29,9 @@ fn main() {
 fn run() -> Result<()> {
     let matches = app::root().get_matches();
 
-    // TODO: Return Result instead of Unit
     match matches.subcommand() {
-        ("series", Some(matches)) => {
-            subcommand::series::run(matches);
-        }
-        // TODO: Put this in a separate function
-        ("artist", Some(matches)) => {
-            let context = app::Context::from_matches(matches)?;
-            let artists = context.client.artists();
-
-            let result = if let Some(q) = matches.value_of("starts-with") {
-                    artists.starting_with(q)
-                } else if let Some(q) = matches.value_of("contains") {
-                    artists.containing(q)
-                } else {
-                    Err("Unknown state")?
-                }.set_page(context.page)
-                .send()?;
-
-            context.printer.stdout(&result);
-        }
-        (other, _) => {
-            Err(format!("Invalid command {}", other))?;
-        }
-    };
-
-    Ok(())
+        ("series", Some(matches)) => subcommand::series::run(matches),
+        ("artist", Some(matches)) => subcommand::artist::run(matches),
+        (other, _) => Err(format!("unrecognized subcommand {}", other))?,
+    }
 }

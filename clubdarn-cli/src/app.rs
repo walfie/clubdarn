@@ -58,9 +58,7 @@ impl<'a> Context<'a> {
             serial_no: matches.value_of("serial-no"),
         };
 
-        let client = clubdarn::Client::new(metadata)
-            .chain_err(|| "unable to create client")?
-            .set_default_serial_no(matches.value_of("serial"));
+        let client = clubdarn::Client::new(metadata).chain_err(|| "unable to create client")?;
 
         Ok(Context {
             client: client,
