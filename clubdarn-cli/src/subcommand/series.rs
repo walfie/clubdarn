@@ -1,4 +1,4 @@
-use Printer;
+use app;
 use clap::{App, Arg, ArgMatches, SubCommand};
 use clubdarn;
 use error::*;
@@ -11,20 +11,18 @@ pub fn app() -> App<'static, 'static> {
 
     SubCommand::with_name("series")
         .about("List series by category ID")
-        .arg(Arg::with_name("category_id")
+        .arg(Arg::with_name("category-id")
             .required(true)
             .index(1)
             .value_name("CATEGORY_ID")
             .possible_values(&all_categories))
 }
 
-pub fn run(client: clubdarn::Client,
-           printer: Printer,
-           matches: &ArgMatches,
-           page: i32)
-           -> Result<()> {
-    let query = matches.value_of("category_id").unwrap();
-    let result = client.series().by_category_id(query).set_page(page).send()?;
+pub fn run(matches: &ArgMatches) -> Result<()> {
+    let context = app::Context::from_matches(matches)?;
 
-    printer.stdout(&result)
+    let query = matches.value_of("category-id").unwrap();
+    let result = context.client.series().by_category_id(query).set_page(context.page).send()?;
+
+    context.printer.stdout(&result)
 }

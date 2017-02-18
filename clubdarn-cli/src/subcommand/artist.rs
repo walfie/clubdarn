@@ -1,12 +1,12 @@
 use clap::{App, Arg, ArgGroup, SubCommand};
 
 pub fn app() -> App<'static, 'static> {
-    SubCommand::with_name("artists")
+    SubCommand::with_name("artist")
         .about("Find artists")
         .group(ArgGroup::with_name("filter")
             .required(true)
             .args(&["starts_with", "contains"]))
-        .arg(Arg::with_name("starts_with")
+        .arg(Arg::with_name("starts-with")
             .help("Find artist names starting with <QUERY>")
             .long("starts-with")
             .value_name("QUERY")

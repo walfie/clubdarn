@@ -1,6 +1,7 @@
 [package]
 name = "clubdarn-cli"
 version = "0.1.0"
+description = "Command line interface for ClubDAM's karaoke search API"
 authors = ["Walfie <walfington@gmail.com>"]
 license = "MIT/Apache-2.0"
 homepage = "https://github.com/walfie/clubdarn"
