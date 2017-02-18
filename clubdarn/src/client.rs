@@ -296,7 +296,10 @@ impl<'a, R, I> RequestBuilder<R, I>
             api::RequestType::FormData => request.form(&self.request),
         };
 
-        let response: R::ResponseType = request_body.send()?.json()?;
+        // TODO: Use enum errors
+        let response: R::ResponseType = request_body.send()
+            .chain_err(|| "failed to send request")?
+            .json().chain_err(|| "failed to parse JSON response")?;
 
         let artist_category_id = self.request
             .category()

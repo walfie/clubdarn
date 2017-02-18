@@ -16,13 +16,22 @@ use error::*;
 fn main() {
     if let Err(ref e) = run() {
         use std::io::Write;
-        use error_chain::ChainedError;
 
-        let stderr = &mut ::std::io::stderr();
+        let stderr = &mut std::io::stderr();
         let err_msg = "Error writing to stderr";
 
-        writeln!(stderr, "{}", e.display()).expect(err_msg);
-        ::std::process::exit(1);
+        writeln!(stderr, "error: {}", e).expect(err_msg);
+
+        for e in e.iter().skip(1) {
+            writeln!(stderr, "caused by: {}", e).expect(err_msg);
+        }
+
+        // If backtrace is generated (via `RUST_BACKTRACE=1`), print it
+        if let Some(backtrace) = e.backtrace() {
+            writeln!(stderr, "backtrace: {:?}", backtrace).expect(err_msg);
+        }
+
+        std::process::exit(1);
     }
 }
 
@@ -30,6 +39,7 @@ fn run() -> Result<()> {
     let matches = app::root().get_matches();
 
     match matches.subcommand() {
+        ("song", Some(matches)) => subcommand::song::run(matches),
         ("series", Some(matches)) => subcommand::series::run(matches),
         ("artist", Some(matches)) => subcommand::artist::run(matches),
         (other, _) => Err(format!("unrecognized subcommand {}", other))?,

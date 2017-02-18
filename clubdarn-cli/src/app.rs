@@ -6,10 +6,11 @@ use serde_json;
 use subcommand;
 
 pub fn root() -> App<'static, 'static> {
-    let subcommands = vec![subcommand::series::app(), subcommand::artist::app()]
-        .into_iter()
-        .map(|s| s.with_global_args())
-        .collect::<Vec<App>>();
+    let subcommands =
+        vec![subcommand::song::app(), subcommand::series::app(), subcommand::artist::app()]
+            .into_iter()
+            .map(|s| s.with_global_args())
+            .collect::<Vec<App>>();
 
     app_from_crate!()
         .about(crate_description!())
