@@ -105,10 +105,10 @@ fn run() -> Result<()> {
         .get_matches();
 
     let metadata = clubdarn::Metadata {
-        app_ver: &value_t!(matches, "app_ver", String)?,
-        device_id: &value_t!(matches, "device_id", String)?,
-        device_nm: &value_t!(matches, "device_nm", String)?,
-        os_ver: &value_t!(matches, "os_ver", String)?,
+        app_ver: matches.value_of("app_ver").unwrap(),
+        device_id: matches.value_of("device_id").unwrap(),
+        device_nm: matches.value_of("device_nm").unwrap(),
+        os_ver: matches.value_of("os_ver").unwrap(),
         serial_no: matches.value_of("serial_no"),
     };
 
@@ -118,18 +118,15 @@ fn run() -> Result<()> {
 
     let page = value_t!(matches, "page", i32)?;
 
-    let query: String;
-
     // TODO: Put these in separate methods
     match matches.subcommand() {
         ("series", Some(matches)) => {
-            query = value_t!(matches, "category_id", String)?;
-            let result = client.series().by_category_id(&query).set_page(page).send()?;
+            let query = matches.value_of("category_id").unwrap();
+            let result = client.series().by_category_id(query).set_page(page).send()?;
 
             pretty_print(&result)?;
         }
-        ("artists", Some(matches)) => {
-            use clubdarn::MatchType::{StartsWith, Contains};
+        ("artist", Some(matches)) => {
             let artists = client.artists();
 
             let result = if let Some(q) = matches.value_of("starts_with") {
