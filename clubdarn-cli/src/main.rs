@@ -27,6 +27,25 @@ fn main() {
     }
 }
 
+pub struct Printer {
+    pub compact: bool,
+}
+impl Printer {
+    fn stringify<T: Serialize>(&self, t: &T) -> Result<String> {
+        if self.compact {
+                serde_json::to_string(t)
+            } else {
+                serde_json::to_string_pretty(t)
+            }
+            .chain_err(|| "failed to serialize JSON")
+    }
+
+    pub fn stdout<T: Serialize>(&self, t: &T) -> Result<()> {
+        let s = self.stringify(t);
+        Ok(println!("{}", s?))
+    }
+}
+
 fn run() -> Result<()> {
 
     let matches = args::app().get_matches();
@@ -43,16 +62,16 @@ fn run() -> Result<()> {
         .chain_err(|| "unable to create client")?
         .set_default_serial_no(matches.value_of("serial"));
 
+    let printer = Printer { compact: matches.is_present("compact_output") };
+
     let page = value_t!(matches, "page", i32)?;
 
-    // TODO: Put these in separate methods
+    // TODO: Return Result instead of Unit
     match matches.subcommand() {
         ("series", Some(matches)) => {
-            let query = matches.value_of("category_id").unwrap();
-            let result = client.series().by_category_id(query).set_page(page).send()?;
-
-            pretty_print(&result)?;
+            subcommand::series::run(client, printer, matches, page);
         }
+        // TODO: Put this in a separate function
         ("artist", Some(matches)) => {
             let artists = client.artists();
 
@@ -65,9 +84,11 @@ fn run() -> Result<()> {
                 }.set_page(page)
                 .send()?;
 
-            pretty_print(&result)?;
+            pretty_print(&result);
         }
-        (other, _) => Err(format!("Invalid command {}", other))?,
+        (other, _) => {
+            Err(format!("Invalid command {}", other))?;
+        }
     };
 
     Ok(())

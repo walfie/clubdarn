@@ -1,5 +1,7 @@
-use clap::{App, Arg, SubCommand};
+use Printer;
+use clap::{App, Arg, ArgMatches, SubCommand};
 use clubdarn;
+use error::*;
 
 pub fn app() -> App<'static, 'static> {
     let all_categories = (&clubdarn::category::series::CATEGORIES)
@@ -14,4 +16,15 @@ pub fn app() -> App<'static, 'static> {
             .index(1)
             .value_name("CATEGORY_ID")
             .possible_values(&all_categories))
+}
+
+pub fn run(client: clubdarn::Client,
+           printer: Printer,
+           matches: &ArgMatches,
+           page: i32)
+           -> Result<()> {
+    let query = matches.value_of("category_id").unwrap();
+    let result = client.series().by_category_id(query).set_page(page).send()?;
+
+    printer.stdout(&result)
 }
