@@ -205,15 +205,25 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
         #[cfg(feature = "library")]
         ("library", Some(matches)) => {
             let paths = matches.values_of("file-path").unwrap();
+
             let meta = paths.flat_map(|p| {
-                    id3::Tag::read_from_path(p).map(|tag| {
-                        clubdarn::TitleAndArtist {
-                            artist: tag.artist().unwrap_or("").to_string().into(),
-                            title: tag.title().unwrap_or("").to_string().into(),
-                        }
-                    })
+                    id3::Tag::read_from_path(p)
+                        .ok()
+                        .and_then(|tag| if let (Some(title), Some(artist)) =
+                            (tag.title(), tag.artist()) {
+                            Some(clubdarn::TitleAndArtist {
+                                title: title.to_string().into(),
+                                artist: artist.to_string().into(),
+                            })
+                        } else {
+                            None
+                        })
                 })
                 .collect::<Vec<_>>();
+
+            if meta.is_empty() {
+                Err("no song metadata found")?
+            }
 
             let result = songs.by_titles_and_artists(&meta).set_page(context.page).send()?;
             return context.printer.stdout(&result);
