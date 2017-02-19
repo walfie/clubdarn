@@ -3,6 +3,8 @@ use app::AppExt;
 use clap::{App, AppSettings, Arg, ArgMatches, SubCommand};
 use clubdarn;
 use error::*;
+#[cfg(feature = "library")]
+use id3;
 
 pub fn app() -> App<'static, 'static> {
     let title = SubCommand::with_name("title")
@@ -99,7 +101,17 @@ pub fn app() -> App<'static, 'static> {
             .required(true))
         .with_global_args();
 
-    SubCommand::with_name("song")
+    #[cfg(feature = "library")]
+    let library = SubCommand::with_name("library")
+        .about("Find songs based on local file metadata")
+        .arg(Arg::with_name("file-path")
+            .help("Path to file")
+            .value_name("FILE_PATH")
+            .multiple(true)
+            .required(true))
+        .with_global_args();
+
+    let sub = SubCommand::with_name("song")
         .about("Find songs")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(title)
@@ -108,7 +120,17 @@ pub fn app() -> App<'static, 'static> {
         .subcommand(category)
         .subcommand(id)
         .subcommand(similar)
-        .subcommand(exact)
+        .subcommand(exact);
+
+    #[cfg(feature = "library")]
+    {
+        sub.subcommand(library)
+    }
+
+    #[cfg(not(feature = "library"))]
+    {
+        sub
+    }
 }
 
 fn collect_query(matches: &ArgMatches, arg_name: &str) -> String {
@@ -171,13 +193,29 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
             let zipped = titles.zip(artists)
                 .map(|(title, artist)| {
                     clubdarn::TitleAndArtist {
-                        title: title,
-                        artist: artist,
+                        title: title.into(),
+                        artist: artist.into(),
                     }
                 })
                 .collect::<Vec<_>>();
 
             let result = songs.by_titles_and_artists(&zipped).set_page(context.page).send()?;
+            return context.printer.stdout(&result);
+        }
+        #[cfg(feature = "library")]
+        ("library", Some(matches)) => {
+            let paths = matches.values_of("file-path").unwrap();
+            let meta = paths.flat_map(|p| {
+                    id3::Tag::read_from_path(p).map(|tag| {
+                        clubdarn::TitleAndArtist {
+                            artist: tag.artist().unwrap_or("").to_string().into(),
+                            title: tag.title().unwrap_or("").to_string().into(),
+                        }
+                    })
+                })
+                .collect::<Vec<_>>();
+
+            let result = songs.by_titles_and_artists(&meta).set_page(context.page).send()?;
             return context.printer.stdout(&result);
         }
         (other, _) => Err(format!("unrecognized subcommand {}", other))?,

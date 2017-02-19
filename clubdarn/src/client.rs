@@ -8,6 +8,7 @@ use model::*;
 use protocol::{api, exist, recommend, search};
 use std::marker::PhantomData;
 use std::sync::Arc;
+use std::borrow::Cow;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
@@ -38,8 +39,8 @@ pub struct Pending<'a>(&'a Metadata<'a>);
 
 #[derive(Debug, Serialize)]
 pub struct TitleAndArtist<'a> {
-    pub title: &'a str,
-    pub artist: &'a str,
+    pub title: Cow<'a, str>,
+    pub artist: Cow<'a, str>,
 }
 
 pub enum MatchType {
@@ -191,11 +192,11 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
     }
 
     pub fn by_titles_and_artists(self,
-                                 titles_and_artists: &[TitleAndArtist<'a>])
+                                 titles_and_artists: &'a [TitleAndArtist<'a>])
                                  -> RequestBuilder<exist::Request<'a>, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = titles_and_artists.iter()
-            .map(|x| exist::RequestItem::from_title_and_artist(x.title, x.artist))
+            .map(|x| exist::RequestItem::from_title_and_artist(&x.title, &x.artist))
             .collect();
 
         req
@@ -205,11 +206,11 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
                                title: &'a str,
                                artist: &'a str)
                                -> RequestBuilder<exist::Request<'a>, Song> {
-        let info = TitleAndArtist {
-            title: title,
-            artist: artist,
-        };
-        self.by_titles_and_artists(&[info])
+        let item = exist::RequestItem::from_title_and_artist(title, artist);
+
+        let mut req = self.default_request::<exist::Request>();
+        req.request.is_exist = vec![item];
+        req
     }
 
     pub fn similar_to(self, song_id: i32) -> RequestBuilder<recommend::Request<'a>, Song> {
@@ -300,7 +301,8 @@ impl<'a, R, I> RequestBuilder<R, I>
         // TODO: Use enum errors
         let response: R::ResponseType = request_body.send()
             .chain_err(|| "failed to send request")?
-            .json().chain_err(|| "failed to parse JSON response")?;
+            .json()
+            .chain_err(|| "failed to parse JSON response")?;
 
         let artist_category_id = self.request
             .category()

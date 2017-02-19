@@ -7,6 +7,9 @@ extern crate clubdarn;
 extern crate serde;
 extern crate serde_json;
 
+#[cfg(feature = "library")]
+extern crate id3;
+
 pub mod error;
 mod subcommand;
 mod app;

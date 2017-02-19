@@ -8,15 +8,17 @@ homepage = "https://github.com/walfie/clubdarn"
 repository = "https://github.com/walfie/clubdarn"
 
 [dependencies]
-clippy = {version = "*", optional = true}
+clippy = { version = "*", optional = true }
 clubdarn = { version = "0.1", path = "../clubdarn" }
 error-chain = "0.9"
 serde = "0.9"
 serde_json = "0.9"
 clap = "2.20"
+id3 = { version = "0.1", optional = true }
 
 [features]
-default = []
+default = ["library"]
+library = ["id3"]
 
 [[bin]]
 name = "clubdarn"
