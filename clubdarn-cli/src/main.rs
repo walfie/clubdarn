@@ -42,6 +42,7 @@ fn run() -> Result<()> {
         ("song", Some(matches)) => subcommand::song::run(matches),
         ("series", Some(matches)) => subcommand::series::run(matches),
         ("artist", Some(matches)) => subcommand::artist::run(matches),
+        ("category", Some(matches)) => subcommand::category::run(matches),
         (other, _) => Err(format!("unrecognized subcommand {}", other))?,
     }
 }
