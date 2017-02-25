@@ -166,11 +166,11 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
         }
         ("series", Some(matches)) => {
             query = collect_query(matches, "series-title");
-            let category_id = matches.value_of("category_id").unwrap();
+            let category_id = matches.value_of("category-id").unwrap();
             songs.by_series_in_category_id(&query, category_id)
         }
         ("category", Some(matches)) => {
-            let category_id = matches.value_of("category_id").unwrap();
+            let category_id = matches.value_of("category-id").unwrap();
             songs.by_category_id(category_id)
         }
         // Looking up a song by ID uses a different request type,
