@@ -6,9 +6,9 @@ use category::*;
 use error::*;
 use model::*;
 use protocol::{api, exist, recommend, search};
+use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::sync::Arc;
-use std::borrow::Cow;
 
 pub struct Client<'a> {
     http: Arc<reqwest::Client>,
@@ -263,9 +263,9 @@ impl<'a> RequestBuilder<Pending<'a>, Series> {
         req
     }
 
-    pub fn by_category<T>(self,
-                          category: Category<SeriesCategory>)
-                          -> RequestBuilder<search::Request<'a>, Series> {
+    pub fn by_category(self,
+                       category: Category<SeriesCategory>)
+                       -> RequestBuilder<search::Request<'a>, Series> {
         self.by_category_id(category.id.0)
     }
 }
