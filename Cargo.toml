@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "clubdarn",
-    "clubdarn-cli"
+    "clubdarn-cli",
+    "clubdarn-server"
 ]
 

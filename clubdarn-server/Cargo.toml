@@ -1,0 +1,23 @@
+[package]
+name = "clubdarn-server"
+version = "0.1.0"
+description = "ClubDAM API proxy"
+authors = ["Walfie <walfington@gmail.com>"]
+license = "MIT/Apache-2.0"
+homepage = "https://github.com/walfie/clubdarn"
+repository = "https://github.com/walfie/clubdarn"
+
+[dependencies]
+clippy = { version = "*", optional = true }
+clubdarn = { version = "0.1", path = "../clubdarn" }
+error-chain = "0.9"
+rocket = "0.2"
+rocket_codegen = "0.2"
+rocket_contrib = "0.2"
+
+[features]
+default = []
+
+[[bin]]
+name = "clubdarn-server"
+
