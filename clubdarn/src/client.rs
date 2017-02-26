@@ -37,7 +37,7 @@ impl Default for Metadata<'static> {
 
 pub struct Pending<'a>(&'a Metadata<'a>);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TitleAndArtist<'a> {
     pub title: Cow<'a, str>,
     pub artist: Cow<'a, str>,

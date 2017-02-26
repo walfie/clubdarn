@@ -101,7 +101,7 @@ mod songs {
     use super::*;
 
     pub fn routes() -> Vec<Route> {
-        routes![by_id, by_name, similar]
+        routes![by_id, by_name, similar, library]
     }
 
     #[derive(FromForm)]
@@ -136,6 +136,14 @@ mod songs {
                params: CommonParams)
                -> PageResult<clubdarn::Song> {
         request!(params, client.songs().similar_to(song_id))
+    }
+
+    #[post("/lookup?<params>", format = "application/json", data = "<post_data>")]
+    fn library(client: ClientState,
+               post_data: JSON<Vec<clubdarn::TitleAndArtist>>,
+               params: CommonParams)
+               -> PageResult<clubdarn::Song> {
+        request!(params, client.songs().by_titles_and_artists(&post_data))
     }
 }
 
