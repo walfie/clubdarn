@@ -33,6 +33,20 @@ fn main() {
         .launch()
 }
 
+#[derive(FromForm)]
+struct CommonParams<'a> {
+    page: Option<u32>,
+    serial_no: Option<&'a str>,
+}
+
+macro_rules! request {
+    ($params:expr, $e:expr) => {{
+        let resp = $e.set_page($params.page.unwrap_or(1))
+            .set_serial_no($params.serial_no).send()?;
+        Ok(JSON(resp))
+    }}
+}
+
 mod artists {
     use super::*;
 
@@ -41,9 +55,11 @@ mod artists {
     }
 
     #[derive(FromForm)]
-    struct ByName {
+    struct ByName<'a> {
         name: String,
         starts_with: Option<bool>,
+        page: Option<u32>,
+        serial_no: Option<&'a str>,
     }
 
     #[get("/?<params>")]
@@ -53,19 +69,19 @@ mod artists {
             _ => clubdarn::MatchType::Contains,
         };
 
-        let resp = client.artists().by_name(&params.name, match_type).send()?;
-        Ok(JSON(resp))
+        request!(params, client.artists().by_name(&params.name, match_type))
     }
 
-    #[get("/live")]
-    fn live(client: ClientState) -> PageResult<clubdarn::Artist> {
-        let resp = client.artists().live_performance().send()?;
-        Ok(JSON(resp))
+    #[get("/live?<params>")]
+    fn live(client: ClientState, params: CommonParams) -> PageResult<clubdarn::Artist> {
+        request!(params, client.artists().live_performance())
     }
 
     #[derive(FromForm)]
     struct ByCategory<'a> {
         category_id: Option<&'a str>,
+        page: Option<u32>,
+        serial_no: Option<&'a str>,
     }
 
     #[get("/<artist_id>/songs?<params>")]
@@ -74,29 +90,24 @@ mod artists {
              params: ByCategory)
              -> PageResult<clubdarn::Song> {
         let category_id = params.category_id.unwrap_or(clubdarn::category::ARTIST_NAME.id.0);
-        let resp = client.songs().by_artist_in_category_id(artist_id, category_id).send()?;
-        Ok(JSON(resp))
+        request!(params,
+                 client.songs().by_artist_in_category_id(artist_id, category_id))
     }
 }
 
 mod songs {
     use super::*;
 
-    #[derive(FromForm)]
-    struct ByTitle {
-        title: String,
-        starts_with: Option<bool>,
-    }
-
-
     pub fn routes() -> Vec<Route> {
         routes![by_id, by_name, similar]
     }
 
-    #[get("/<song_id>")]
-    fn by_id(client: ClientState, song_id: u32) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().by_id(song_id).send()?;
-        Ok(JSON(resp))
+    #[derive(FromForm)]
+    struct ByTitle<'a> {
+        title: String,
+        starts_with: Option<bool>,
+        page: Option<u32>,
+        serial_no: Option<&'a str>,
     }
 
     #[get("/?<params>")]
@@ -106,14 +117,23 @@ mod songs {
             _ => clubdarn::MatchType::Contains,
         };
 
-        let resp = client.songs().by_title(&params.title, match_type).send()?;
-        Ok(JSON(resp))
+        request!(params, client.songs().by_title(&params.title, match_type))
     }
 
-    #[get("/<song_id>/similar")]
-    fn similar(client: ClientState, song_id: u32) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().similar_to(song_id).send()?;
-        Ok(JSON(resp))
+    #[get("/<song_id>?<params>")]
+    fn by_id(client: ClientState,
+             song_id: u32,
+             params: CommonParams)
+             -> PageResult<clubdarn::Song> {
+        request!(params, client.songs().by_id(song_id))
+    }
+
+    #[get("/<song_id>/similar?<params>")]
+    fn similar(client: ClientState,
+               song_id: u32,
+               params: CommonParams)
+               -> PageResult<clubdarn::Song> {
+        request!(params, client.songs().similar_to(song_id))
     }
 }
 
@@ -141,25 +161,30 @@ mod categories {
         Ok(JSON(page))
     }
 
-    #[get("/<category_id>/series")]
-    fn series(client: ClientState, category_id: &str) -> PageResult<clubdarn::Series> {
-        let resp = client.series().by_category_id(category_id).send()?;
-        Ok(JSON(resp))
+    #[get("/<category_id>/series?<params>")]
+    fn series(client: ClientState,
+              category_id: &str,
+              params: CommonParams)
+              -> PageResult<clubdarn::Series> {
+        request!(params, client.series().by_category_id(category_id))
     }
 
-    #[get("/<category_id>/series/<series_title>/songs")]
+    #[get("/<category_id>/series/<series_title>/songs?<params>")]
     fn series_songs(client: ClientState,
                     category_id: &str,
-                    series_title: String)
+                    series_title: String,
+                    params: CommonParams)
                     -> PageResult<clubdarn::Song> {
-        let resp = client.songs().by_series_in_category_id(&series_title, category_id).send()?;
-        Ok(JSON(resp))
+        request!(params,
+                 client.songs().by_series_in_category_id(&series_title, category_id))
     }
 
-    #[get("/<category_id>/songs")]
-    fn songs(client: ClientState, category_id: &str) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().by_category_id(category_id).send()?;
-        Ok(JSON(resp))
+    #[get("/<category_id>/songs?<params>")]
+    fn songs(client: ClientState,
+             category_id: &str,
+             params: CommonParams)
+             -> PageResult<clubdarn::Song> {
+        request!(params, client.songs().by_category_id(category_id))
     }
 
     #[derive(Clone, Serialize)]

@@ -273,12 +273,12 @@ impl<'a> RequestBuilder<Pending<'a>, Series> {
 impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>
 {
-    pub fn set_page(&mut self, page_num: u32) -> &Self {
+    pub fn set_page(&mut self, page_num: u32) -> &mut Self {
         self.request.set_page(page_num);
         self
     }
 
-    pub fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self {
+    pub fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &mut Self {
         self.request.set_serial_no(serial_no);
         self
     }

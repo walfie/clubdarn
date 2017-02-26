@@ -14,10 +14,10 @@ pub trait Request<'a>: Serialize {
     fn url() -> &'a str;
     fn from_client_metadata(meta: &client::Metadata<'a>) -> Self;
 
-    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self;
+    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &mut Self;
 
     fn page(&self) -> u32;
-    fn set_page(&mut self, page_num: u32) -> &Self;
+    fn set_page(&mut self, page_num: u32) -> &mut Self;
 
     fn category(&'a self) -> Option<&'a str>;
 }

@@ -74,7 +74,7 @@ impl<'a> api::Request<'a> for Request<'a> {
         None
     }
 
-    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &Self {
+    fn set_serial_no(&mut self, serial_no: Option<&'a str>) -> &mut Self {
         self.serial_no = serial_no;
         self
     }
@@ -84,7 +84,7 @@ impl<'a> api::Request<'a> for Request<'a> {
     }
 
     #[allow(unused_variables)]
-    fn set_page(&mut self, page_num: u32) -> &Self {
+    fn set_page(&mut self, page_num: u32) -> &mut Self {
         self
     }
 }
