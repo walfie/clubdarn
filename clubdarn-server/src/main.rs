@@ -17,12 +17,14 @@ extern crate serde_derive;
 
 pub mod error;
 pub use error::*;
+mod cors;
+use cors::Cors;
 
 use rocket::{Route, State};
 use rocket_contrib::JSON;
 
 pub type ClientState<'a> = State<'a, clubdarn::Client<'static>>;
-pub type PageResult<T> = Result<JSON<clubdarn::Paginated<T>>>;
+pub type PageResult<T> = Result<Cors<JSON<clubdarn::Paginated<T>>>>;
 
 fn main() {
     rocket::ignite()
@@ -43,7 +45,7 @@ macro_rules! request {
     ($params:expr, $e:expr) => {{
         let resp = $e.set_page($params.page.unwrap_or(1))
             .set_serial_no($params.serial_no).send()?;
-        Ok(JSON(resp))
+        Ok(Cors(JSON(resp)))
     }}
 }
 
@@ -140,8 +142,7 @@ mod songs {
 mod categories {
     use super::*;
     use clubdarn::Paginated;
-    use clubdarn::category;
-    use clubdarn::category::{Category, Description, SongCategory};
+    use clubdarn::category::{self, Category, Description, SongCategory};
 
     pub fn routes() -> Vec<Route> {
         routes![all, series_songs, songs, series]
@@ -158,7 +159,7 @@ mod categories {
             total_pages: 1,
             items: items.to_vec(),
         };
-        Ok(JSON(page))
+        Ok(Cors(JSON(page)))
     }
 
     #[get("/<category_id>/series?<params>")]
