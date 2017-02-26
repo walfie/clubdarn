@@ -93,9 +93,9 @@ mod songs {
         routes![by_id, by_name, similar]
     }
 
-    #[get("/<id>")]
-    fn by_id(client: ClientState, id: u32) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().by_id(id).send()?;
+    #[get("/<song_id>")]
+    fn by_id(client: ClientState, song_id: u32) -> PageResult<clubdarn::Song> {
+        let resp = client.songs().by_id(song_id).send()?;
         Ok(JSON(resp))
     }
 
@@ -110,9 +110,9 @@ mod songs {
         Ok(JSON(resp))
     }
 
-    #[get("/<id>/similar")]
-    fn similar(client: ClientState, id: u32) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().similar_to(id).send()?;
+    #[get("/<song_id>/similar")]
+    fn similar(client: ClientState, song_id: u32) -> PageResult<clubdarn::Song> {
+        let resp = client.songs().similar_to(song_id).send()?;
         Ok(JSON(resp))
     }
 }
