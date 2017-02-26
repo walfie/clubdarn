@@ -26,9 +26,9 @@ pub type PageResult<T> = Result<JSON<clubdarn::Paginated<T>>>;
 
 fn main() {
     rocket::ignite()
-        .mount("/artists", artists::routes())
-        .mount("/songs", songs::routes())
-        .mount("/categories", categories::routes())
+        .mount("/api/artists", artists::routes())
+        .mount("/api/songs", songs::routes())
+        .mount("/api/categories", categories::routes())
         .manage(clubdarn::Client::default().unwrap())
         .launch()
 }
