@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-#[derive(Serialize)]
+#[derive(Clone, Copy, Serialize)]
 pub struct CategoryId<'a>(pub &'a str);
 
 pub trait CategoryType {}
@@ -14,7 +14,7 @@ impl CategoryType for ArtistCategory {}
 pub struct SeriesCategory;
 impl CategoryType for SeriesCategory {}
 
-#[derive(Serialize)]
+#[derive(Clone, Copy, Serialize)]
 pub struct Category<T: CategoryType> {
     pub id: CategoryId<'static>,
     pub description: Description,
@@ -22,7 +22,7 @@ pub struct Category<T: CategoryType> {
     category_type: PhantomData<T>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Copy, Serialize)]
 pub struct Description {
     pub en: &'static str,
     pub ja: &'static str,

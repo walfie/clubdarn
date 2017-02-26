@@ -11,6 +11,9 @@ extern crate error_chain;
 extern crate rocket;
 extern crate rocket_contrib;
 extern crate clubdarn;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod error;
 pub use error::*;
@@ -60,9 +63,18 @@ mod artists {
         Ok(JSON(resp))
     }
 
-    #[get("/<id>/songs")]
-    fn songs(client: ClientState, id: u32) -> PageResult<clubdarn::Song> {
-        let resp = client.songs().by_artist_id(id).send()?;
+    #[derive(FromForm)]
+    struct ByCategory<'a> {
+        category_id: Option<&'a str>,
+    }
+
+    #[get("/<artist_id>/songs?<params>")]
+    fn songs(client: ClientState,
+             artist_id: u32,
+             params: ByCategory)
+             -> PageResult<clubdarn::Song> {
+        let category_id = params.category_id.unwrap_or(clubdarn::category::ARTIST_NAME.id.0);
+        let resp = client.songs().by_artist_in_category_id(artist_id, category_id).send()?;
         Ok(JSON(resp))
     }
 }
@@ -107,9 +119,26 @@ mod songs {
 
 mod categories {
     use super::*;
+    use clubdarn::Paginated;
+    use clubdarn::category;
+    use clubdarn::category::{Category, Description, SongCategory};
 
     pub fn routes() -> Vec<Route> {
-        routes![series_songs, songs, series]
+        routes![all, series_songs, songs, series]
+    }
+
+    #[get("/")]
+    fn all() -> PageResult<CategoryGroup> {
+        let items = CATEGORY_GROUPS;
+        let page = Paginated {
+            page: 1,
+            artist_category_id: category::ARTIST_NAME.id.0.to_string(),
+            series_category_id: None,
+            total_items: items.len() as u32,
+            total_pages: 1,
+            items: items.to_vec(),
+        };
+        Ok(JSON(page))
     }
 
     #[get("/<category_id>/series")]
@@ -132,4 +161,32 @@ mod categories {
         let resp = client.songs().by_category_id(category_id).send()?;
         Ok(JSON(resp))
     }
+
+    #[derive(Clone, Serialize)]
+    struct CategoryGroup {
+        description: Description,
+        categories: &'static [Category<SongCategory>],
+    }
+    const NEW_SONGS: CategoryGroup = CategoryGroup {
+        description: Description {
+            en: "New Songs",
+            ja: "新曲",
+        },
+        categories: &category::new_songs::CATEGORIES,
+    };
+    const VOCALOID: CategoryGroup = CategoryGroup {
+        description: Description {
+            en: "VOCALOID",
+            ja: "ボーカロイド",
+        },
+        categories: &category::vocaloid::CATEGORIES,
+    };
+    const RANKING: CategoryGroup = CategoryGroup {
+        description: Description {
+            en: "Rankings",
+            ja: "ランキング",
+        },
+        categories: &category::ranking::CATEGORIES,
+    };
+    const CATEGORY_GROUPS: &'static [CategoryGroup] = &[NEW_SONGS, VOCALOID, RANKING];
 }
