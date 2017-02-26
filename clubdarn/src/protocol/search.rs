@@ -17,12 +17,12 @@ pub struct Request<'a> {
     #[serde(rename = "serialNo", skip_serializing_if = "Option::is_none")]
     pub serial_no: Option<&'a str>,
 
-    pub page: i32,
+    pub page: u32,
     #[serde(rename = "categoryCd")]
     pub category_cd: &'a str,
 
     #[serde(rename = "artistId", skip_serializing_if = "Option::is_none")]
-    pub artist_id: Option<i32>,
+    pub artist_id: Option<u32>,
 
     #[serde(rename = "artistName", skip_serializing_if = "Option::is_none")]
     pub artist_name: Option<&'a str>,
@@ -70,11 +70,11 @@ impl<'a> api::Request<'a> for Request<'a> {
         Some(self.category_cd)
     }
 
-    fn page(&self) -> i32 {
+    fn page(&self) -> u32 {
         self.page
     }
 
-    fn set_page(&mut self, page_num: i32) -> &Self {
+    fn set_page(&mut self, page_num: u32) -> &Self {
         self.page = page_num;
         self
     }
@@ -84,10 +84,10 @@ impl<'a> api::Request<'a> for Request<'a> {
 pub struct Response {
     #[serde(rename = "searchResult")]
     pub search_result: Vec<Item>,
-    #[serde(rename = "totalCount", deserialize_with = "deserialize_string_as_i32")]
-    pub total_count: i32,
-    #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_i32")]
-    pub total_page: i32,
+    #[serde(rename = "totalCount", deserialize_with = "deserialize_string_as_u32")]
+    pub total_count: u32,
+    #[serde(rename = "totalPage", deserialize_with = "deserialize_string_as_u32")]
+    pub total_page: u32,
 }
 
 impl api::Response for Response {
@@ -97,15 +97,15 @@ impl api::Response for Response {
         self.search_result
     }
 
-    fn total_pages(&self) -> i32 {
-        if (self.search_result.len() as i32) >= self.total_count {
+    fn total_pages(&self) -> u32 {
+        if (self.search_result.len() as u32) >= self.total_count {
             1
         } else {
             self.total_page
         }
     }
 
-    fn total_items(&self) -> Option<i32> {
+    fn total_items(&self) -> Option<u32> {
         Some(self.total_count)
     }
 }

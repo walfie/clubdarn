@@ -51,12 +51,12 @@ impl<'a> api::Request<'a> for Request<'a> {
         None
     }
 
-    fn page(&self) -> i32 {
+    fn page(&self) -> u32 {
         1
     }
 
     #[allow(unused_variables)]
-    fn set_page(&mut self, page_num: i32) -> &Self {
+    fn set_page(&mut self, page_num: u32) -> &Self {
         self
     }
 }
@@ -73,12 +73,12 @@ impl api::Response for Response {
         self.list
     }
 
-    fn total_pages(&self) -> i32 {
+    fn total_pages(&self) -> u32 {
         1
     }
 
-    fn total_items(&self) -> Option<i32> {
-        Some(self.list.len() as i32)
+    fn total_items(&self) -> Option<u32> {
+        Some(self.list.len() as u32)
     }
 }
 

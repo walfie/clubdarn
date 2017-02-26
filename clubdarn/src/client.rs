@@ -23,7 +23,7 @@ pub struct Metadata<'a> {
     pub serial_no: Option<&'a str>,
 }
 
-impl<'a> Default for Metadata<'a> {
+impl Default for Metadata<'static> {
     fn default() -> Self {
         Metadata {
             app_ver: "1.2.0", // Denmoku Mini app version
@@ -138,12 +138,12 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         self.by_title(title, MatchType::Contains)
     }
 
-    pub fn by_artist_id(self, id: i32) -> RequestBuilder<search::Request<'a>, Song> {
+    pub fn by_artist_id(self, id: u32) -> RequestBuilder<search::Request<'a>, Song> {
         self.by_artist_in_category_id(id, category::ARTIST_NAME.id.0)
     }
 
     pub fn by_artist_in_category_id(self,
-                                    artist_id: i32,
+                                    artist_id: u32,
                                     category_id: &'a str)
                                     -> RequestBuilder<search::Request, Song> {
         let mut req = self.default_request::<search::Request>();
@@ -181,13 +181,13 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         self.by_category_id(category.id.0)
     }
 
-    pub fn by_ids(self, ids: &[i32]) -> RequestBuilder<exist::Request<'a>, Song> {
+    pub fn by_ids(self, ids: &[u32]) -> RequestBuilder<exist::Request<'a>, Song> {
         let mut req = self.default_request::<exist::Request>();
         req.request.is_exist = ids.iter().map(|id| exist::RequestItem::from_id(*id)).collect();
         req
     }
 
-    pub fn by_id(self, id: i32) -> RequestBuilder<exist::Request<'a>, Song> {
+    pub fn by_id(self, id: u32) -> RequestBuilder<exist::Request<'a>, Song> {
         self.by_ids(&[id])
     }
 
@@ -213,12 +213,12 @@ impl<'a> RequestBuilder<Pending<'a>, Song> {
         req
     }
 
-    pub fn similar_to(self, song_id: i32) -> RequestBuilder<recommend::Request<'a>, Song> {
+    pub fn similar_to(self, song_id: u32) -> RequestBuilder<recommend::Request<'a>, Song> {
         let mut req = self.default_request::<recommend::Request>();
         let mut song_id_str = song_id.to_string();
 
         // The recommend API requires song IDs to be in the format "1234-56"
-        if (song_id_str.len() as i32) > 4 {
+        if (song_id_str.len() as u32) > 4 {
             song_id_str.insert(4, '-');
         }
 
@@ -273,7 +273,7 @@ impl<'a> RequestBuilder<Pending<'a>, Series> {
 impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>
 {
-    pub fn set_page(&mut self, page_num: i32) -> &Self {
+    pub fn set_page(&mut self, page_num: u32) -> &Self {
         self.request.set_page(page_num);
         self
     }
@@ -326,7 +326,7 @@ impl<'a, R, I> RequestBuilder<R, I>
             items: response.take_items().into_iter().map(I::from).collect(),
         };
 
-        body.total_items = total_items.unwrap_or(body.items.len() as i32);
+        body.total_items = total_items.unwrap_or(body.items.len() as u32);
 
         Ok(body)
     }

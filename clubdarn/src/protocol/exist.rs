@@ -27,11 +27,11 @@ pub struct RequestItem<'a> {
     #[serde(rename = "songName", skip_serializing_if = "Option::is_none")]
     song_name: Option<&'a str>,
     #[serde(rename = "reqNo", skip_serializing_if = "Option::is_none")]
-    req_no: Option<i32>,
+    req_no: Option<u32>,
 }
 
 impl<'a> RequestItem<'a> {
-    pub fn from_id(id: i32) -> Self {
+    pub fn from_id(id: u32) -> Self {
         RequestItem {
             song_name: None,
             artist_name: None,
@@ -79,12 +79,12 @@ impl<'a> api::Request<'a> for Request<'a> {
         self
     }
 
-    fn page(&self) -> i32 {
+    fn page(&self) -> u32 {
         1
     }
 
     #[allow(unused_variables)]
-    fn set_page(&mut self, page_num: i32) -> &Self {
+    fn set_page(&mut self, page_num: u32) -> &Self {
         self
     }
 }
@@ -102,11 +102,11 @@ impl api::Response for Response {
         self.is_exist.into_iter().filter(|item| !item.req_no.is_empty()).collect()
     }
 
-    fn total_pages(&self) -> i32 {
+    fn total_pages(&self) -> u32 {
         1
     }
 
-    fn total_items(&self) -> Option<i32> {
+    fn total_items(&self) -> Option<u32> {
         None
     }
 }

@@ -42,7 +42,7 @@ impl Printer {
 pub struct Context<'a> {
     pub client: clubdarn::Client<'a>,
     pub printer: Printer,
-    pub page: i32,
+    pub page: u32,
 }
 
 impl<'a> Context<'a> {
@@ -53,7 +53,7 @@ impl<'a> Context<'a> {
         }
 
         let printer = Printer { compact: matches.is_present("compact-output") };
-        let page = value_t!(matches, "page", i32)?;
+        let page = value_t!(matches, "page", u32)?;
 
         let metadata = clubdarn::Metadata {
             app_ver: matches.value_of("app-ver").unwrap(),

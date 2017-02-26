@@ -4,9 +4,9 @@ use std::convert::From;
 use std::ops::Not;
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct SongId(pub i32);
+pub struct SongId(pub u32);
 #[derive(Debug, PartialEq, Serialize)]
-pub struct ArtistId(pub i32);
+pub struct ArtistId(pub u32);
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Artist {
@@ -44,20 +44,20 @@ pub struct Series {
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Paginated<T> {
-    pub page: i32,
+    pub page: u32,
     #[serde(rename="artistCategoryId")]
     pub artist_category_id: String,
     #[serde(rename="seriesCategoryId")]
     pub series_category_id: Option<String>,
     #[serde(rename="total_items")]
-    pub total_items: i32,
+    pub total_items: u32,
     #[serde(rename="total_pages")]
-    pub total_pages: i32,
+    pub total_pages: u32,
     pub items: Vec<T>,
 }
 
 impl<T> Paginated<T> {
-    pub fn next_page(&self) -> Option<i32> {
+    pub fn next_page(&self) -> Option<u32> {
         if self.page < self.total_pages {
             Some(self.page + 1)
         } else {
@@ -65,7 +65,7 @@ impl<T> Paginated<T> {
         }
     }
 
-    pub fn prev_page(&self) -> Option<i32> {
+    pub fn prev_page(&self) -> Option<u32> {
         if self.page > 1 {
             Some(self.page - 1)
         } else {
@@ -79,7 +79,7 @@ impl<'a, T> From<T> for SongId
 {
     fn from(s: T) -> Self {
         // TODO: `replacen` stabilizes in Rust 1.16.0
-        SongId(s.into().replace("-", "").parse().unwrap_or(-1))
+        SongId(s.into().replace("-", "").parse().unwrap_or(0))
     }
 }
 
@@ -87,7 +87,7 @@ impl<'a, T> From<T> for ArtistId
     where T: Into<Cow<'a, str>>
 {
     fn from(s: T) -> Self {
-        ArtistId(s.into().parse().unwrap_or(-1))
+        ArtistId(s.into().parse().unwrap_or(0))
     }
 }
 

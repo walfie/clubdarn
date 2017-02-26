@@ -156,7 +156,7 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
             songs.by_title(&query, match_type)
         }
         ("artist", Some(matches)) => {
-            let artist_id = value_t!(matches, "artist-id", i32)?;
+            let artist_id = value_t!(matches, "artist-id", u32)?;
 
             if matches.is_present("live") {
                 songs.by_artist_in_category_id(artist_id, clubdarn::category::LIVE_PERFORMANCE.id.0)
@@ -177,12 +177,12 @@ pub fn run(matches: &ArgMatches) -> Result<()> {
         // which would cause these match arms to have a incompatible
         // types. We use an explicit returns here to avoid that.
         ("id", Some(matches)) => {
-            let ids = values_t!(matches, "song-id", i32)?;
+            let ids = values_t!(matches, "song-id", u32)?;
             let result = songs.by_ids(&ids).set_page(context.page).send()?;
             return context.printer.stdout(&result);
         }
         ("similar", Some(matches)) => {
-            let id = value_t!(matches, "song-id", i32)?;
+            let id = value_t!(matches, "song-id", u32)?;
             let result = songs.similar_to(id).set_page(context.page).send()?;
             return context.printer.stdout(&result);
         }
