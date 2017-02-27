@@ -49,9 +49,9 @@ pub struct Paginated<T> {
     pub artist_category_id: String,
     #[serde(rename="seriesCategoryId")]
     pub series_category_id: Option<String>,
-    #[serde(rename="total_items")]
+    #[serde(rename="totalItems")]
     pub total_items: u32,
-    #[serde(rename="total_pages")]
+    #[serde(rename="totalPages")]
     pub total_pages: u32,
     pub items: Vec<T>,
 }
