@@ -13,13 +13,17 @@ extern crate rocket_contrib;
 extern crate clubdarn;
 extern crate serde;
 #[macro_use]
+extern crate serde_json;
+#[macro_use]
 extern crate serde_derive;
+extern crate reqwest;
 
 pub mod error;
 pub use error::*;
 mod cors;
-use cors::Cors;
+mod elastic;
 
+use cors::Cors;
 use rocket::{Route, State};
 use rocket_contrib::JSON;
 
@@ -27,11 +31,32 @@ pub type ClientState<'a> = State<'a, clubdarn::Client<'static>>;
 pub type PageResult<T> = Result<Cors<JSON<clubdarn::Paginated<T>>>>;
 
 fn main() {
+    let mut args = std::env::args().skip(1);
+
+    let default_elastic_url = "http://localhost:9200";
+
+    let elastic_url = args.next().unwrap_or_else(|| {
+        use std::io::Write;
+        let mut stderr = std::io::stderr();
+
+        writeln!(&mut stderr,
+                 "No elasticsearch URL provided, using the default `{}`",
+                 default_elastic_url)
+            .expect("failed to write to stderr");
+
+        default_elastic_url.to_string()
+    });
+
+    let elastic_client = elastic::Client::new(elastic_url, "series".to_string())
+        .expect("Failed to create client");
+
     rocket::ignite()
         .mount("/api/artists", artists::routes())
         .mount("/api/songs", songs::routes())
         .mount("/api/categories", categories::routes())
+        .mount("/api/series", series::routes())
         .manage(clubdarn::Client::default().unwrap())
+        .manage(elastic_client)
         .launch()
 }
 
@@ -47,6 +72,35 @@ macro_rules! request {
             .set_serial_no($params.serial_no).send()?;
         Ok(Cors(JSON(resp)))
     }}
+}
+
+mod series {
+    use super::*;
+
+    pub fn routes() -> Vec<Route> {
+        routes![by_title]
+    }
+
+    #[derive(FromForm)]
+    struct ByTitle {
+        title: String,
+    }
+
+    #[get("/?<params>")]
+    fn by_title(client: State<elastic::Client>, params: ByTitle) -> PageResult<clubdarn::Series> {
+        let series = client.search_series(&params.title)?;
+
+        let page = clubdarn::Paginated {
+            page: 1,
+            artist_category_id: clubdarn::category::ARTIST_NAME.id.0.to_string(),
+            series_category_id: Some(clubdarn::category::series::ANIME.id.0.to_string()),
+            total_items: series.len() as u32,
+            total_pages: 1,
+            items: series,
+        };
+
+        Ok(Cors(JSON(page)))
+    }
 }
 
 mod artists {
