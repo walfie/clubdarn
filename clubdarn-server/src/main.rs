@@ -262,13 +262,6 @@ mod categories {
         },
         categories: &category::new_songs::CATEGORIES,
     };
-    const VOCALOID: CategoryGroup = CategoryGroup {
-        description: Description {
-            en: "VOCALOID",
-            ja: "ボーカロイド",
-        },
-        categories: &category::vocaloid::CATEGORIES,
-    };
     const RANKING: CategoryGroup = CategoryGroup {
         description: Description {
             en: "Rankings",
@@ -276,5 +269,12 @@ mod categories {
         },
         categories: &category::ranking::CATEGORIES,
     };
-    const CATEGORY_GROUPS: &'static [CategoryGroup] = &[NEW_SONGS, VOCALOID, RANKING];
+    const VOCALOID: CategoryGroup = CategoryGroup {
+        description: Description {
+            en: "VOCALOID",
+            ja: "ボーカロイド",
+        },
+        categories: &category::vocaloid::CATEGORIES,
+    };
+    const CATEGORY_GROUPS: &'static [CategoryGroup] = &[NEW_SONGS, RANKING, VOCALOID];
 }
