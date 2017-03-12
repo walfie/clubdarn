@@ -81,9 +81,13 @@ mod series {
         routes![by_title]
     }
 
+    // Rocket doesn't ignore extra params so we have to add page/serial_no to everything...
     #[derive(FromForm)]
-    struct ByTitle {
+    #[allow(dead_code)]
+    struct ByTitle<'a> {
         title: String,
+        page: Option<u32>,
+        serial_no: Option<&'a str>,
     }
 
     #[get("/?<params>")]
