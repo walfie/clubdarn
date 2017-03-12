@@ -79,4 +79,5 @@ impl Client {
     }
 }
 
-const SERIES_SEARCH_FIELDS: [&'static str; 3] = ["titles.x-jat", "titles.ja", "titles.en"];
+const SERIES_SEARCH_FIELDS: [&'static str; 4] =
+    ["titles.x-jat", "titles.ja", "titles.en", "titles.clubdam"];
