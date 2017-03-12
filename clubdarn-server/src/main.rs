@@ -210,8 +210,9 @@ mod categories {
         routes![all, series_songs, songs, series]
     }
 
-    #[get("/")]
-    fn all() -> PageResult<CategoryGroup> {
+    #[get("/?<params>")]
+    #[allow(unused_variables)]
+    fn all(params: CommonParams) -> PageResult<CategoryGroup> {
         let items = CATEGORY_GROUPS;
         let page = Paginated {
             page: 1,
