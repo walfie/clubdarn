@@ -10,6 +10,8 @@ impl<'a, R> Responder<'a> for Cors<R>
     fn respond(self) -> response::Result<'a> {
         let response = Response::build_from(self.0.respond()?)
             .raw_header("Access-Control-Allow-Origin", "*")
+            .raw_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            .raw_header("Access-Control-Allow-Headers", "Content-Type")
             .finalize();
 
         Ok(response)

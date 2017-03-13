@@ -159,7 +159,7 @@ mod songs {
     use super::*;
 
     pub fn routes() -> Vec<Route> {
-        routes![by_id, by_name, similar, library]
+        routes![by_id, by_name, similar, library, library_options]
     }
 
     #[derive(FromForm)]
@@ -194,6 +194,12 @@ mod songs {
                params: CommonParams)
                -> PageResult<clubdarn::Song> {
         request!(params, client.songs().similar_to(song_id))
+    }
+
+    #[allow(unused_variables)]
+    #[route(OPTIONS, "/lookup?<params>")]
+    fn library_options(params: CommonParams) -> Cors<()> {
+        Cors(())
     }
 
     #[post("/lookup?<params>", format = "application/json", data = "<post_data>")]
