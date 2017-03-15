@@ -207,7 +207,19 @@ mod songs {
                post_data: JSON<Vec<clubdarn::TitleAndArtist>>,
                params: CommonParams)
                -> PageResult<clubdarn::Song> {
-        request!(params, client.songs().by_titles_and_artists(&post_data))
+        if post_data.is_empty() {
+            // TODO: Add a separate constructor function for `Paginated`
+            Ok(Cors(JSON(clubdarn::Paginated {
+                page: 1,
+                artist_category_id: clubdarn::category::ARTIST_NAME.id.0.to_string(),
+                series_category_id: None,
+                total_items: 0,
+                total_pages: 1,
+                items: Vec::new(),
+            })))
+        } else {
+            request!(params, client.songs().by_titles_and_artists(&post_data))
+        }
     }
 }
 
