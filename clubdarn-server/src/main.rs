@@ -20,15 +20,18 @@ extern crate reqwest;
 
 pub mod error;
 pub use error::*;
-mod cors;
+mod responders;
 mod elastic;
 
-use cors::Cors;
+use responders::{Cached, Cors};
 use rocket::{Route, State};
 use rocket_contrib::JSON;
 
 pub type ClientState<'a> = State<'a, clubdarn::Client<'static>>;
 pub type PageResult<T> = Result<Cors<JSON<clubdarn::Paginated<T>>>>;
+pub type CachedPageResult<T> = Result<Cached<Cors<JSON<clubdarn::Paginated<T>>>>>;
+
+const CATEGORY_CACHE_TTL_SECONDS: u32 = 3600 * 6; // 6 hours
 
 fn main() {
     let mut args = std::env::args().skip(1);
@@ -71,6 +74,17 @@ macro_rules! request {
         let resp = $e.set_page($params.page.unwrap_or(1))
             .set_serial_no($params.serial_no).send()?;
         Ok(Cors(JSON(resp)))
+    }}
+}
+
+macro_rules! cached_request {
+    ($duration:expr, $params:expr, $e:expr) => {{
+        request!($params, $e).map(|inner|
+            Cached {
+                inner: inner,
+                max_age_seconds: $duration
+            }
+        )
     }}
 }
 
@@ -251,8 +265,10 @@ mod categories {
     fn series(client: ClientState,
               category_id: &str,
               params: CommonParams)
-              -> PageResult<clubdarn::Series> {
-        request!(params, client.series().by_category_id(category_id))
+              -> CachedPageResult<clubdarn::Series> {
+        cached_request!(CATEGORY_CACHE_TTL_SECONDS,
+                        params,
+                        client.series().by_category_id(category_id))
     }
 
     #[get("/<category_id>/series/<series_title>/songs?<params>")]
@@ -260,17 +276,20 @@ mod categories {
                     category_id: &str,
                     series_title: String,
                     params: CommonParams)
-                    -> PageResult<clubdarn::Song> {
-        request!(params,
-                 client.songs().by_series_in_category_id(&series_title, category_id))
+                    -> CachedPageResult<clubdarn::Song> {
+        cached_request!(CATEGORY_CACHE_TTL_SECONDS,
+                        params,
+                        client.songs().by_series_in_category_id(&series_title, category_id))
     }
 
     #[get("/<category_id>/songs?<params>")]
     fn songs(client: ClientState,
              category_id: &str,
              params: CommonParams)
-             -> PageResult<clubdarn::Song> {
-        request!(params, client.songs().by_category_id(category_id))
+             -> CachedPageResult<clubdarn::Song> {
+        cached_request!(CATEGORY_CACHE_TTL_SECONDS,
+                        params,
+                        client.songs().by_category_id(category_id))
     }
 
     #[derive(Clone, Serialize)]
