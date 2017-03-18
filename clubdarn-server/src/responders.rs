@@ -24,6 +24,14 @@ pub struct Cached<R> {
     pub max_age_seconds: u32,
 }
 
+impl<R> Cached<R> {
+    pub fn new(inner: R, max_age_seconds: u32) -> Self {
+        Cached {
+            inner: inner,
+            max_age_seconds: max_age_seconds,
+        }
+    }
+}
 
 impl<'a, R> Responder<'a> for Cached<R>
     where R: Responder<'a>

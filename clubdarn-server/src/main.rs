@@ -80,10 +80,7 @@ macro_rules! request {
 macro_rules! cached_request {
     ($duration:expr, $params:expr, $e:expr) => {{
         request!($params, $e).map(|inner|
-            Cached {
-                inner: inner,
-                max_age_seconds: $duration
-            }
+            Cached::new(inner, $duration)
         )
     }}
 }
@@ -248,7 +245,7 @@ mod categories {
 
     #[get("/?<params>")]
     #[allow(unused_variables)]
-    fn all(params: CommonParams) -> PageResult<CategoryGroup> {
+    fn all(params: CommonParams) -> CachedPageResult<CategoryGroup> {
         let items = CATEGORY_GROUPS;
         let page = Paginated {
             page: 1,
@@ -258,7 +255,7 @@ mod categories {
             total_pages: 1,
             items: items.to_vec(),
         };
-        Ok(Cors(JSON(page)))
+        Ok(Cached::new(Cors(JSON(page)), CATEGORY_CACHE_TTL_SECONDS))
     }
 
     #[get("/<category_id>/series?<params>")]
