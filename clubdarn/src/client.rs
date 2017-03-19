@@ -288,18 +288,23 @@ impl<'a, R, I> RequestBuilder<R, I>
     where R: api::Request<'a>,
           I: From<<R::ResponseType as api::Response>::ItemType>
 {
+    fn make_request(&'a self) -> reqwest::RequestBuilder {
+        let request = self.http.post(R::url());
+
+        match R::request_type() {
+            api::RequestType::Json => request.json(&self.request),
+            api::RequestType::FormData => request.form(&self.request),
+        }
+    }
+
     pub fn send(&'a self) -> Result<Paginated<I>> {
         use protocol::api::Response;
 
-        let request = self.http.post(R::url());
-
-        let request_body = match R::request_type() {
-            api::RequestType::Json => request.json(&self.request),
-            api::RequestType::FormData => request.form(&self.request),
-        };
-
         // TODO: Use enum errors
-        let response: R::ResponseType = request_body.send()
+        // We have to retry here due to periodic "Connection closed" errors.
+        // See: https://github.com/seanmonstar/reqwest/issues/44
+        let response: R::ResponseType = self.make_request().send()
+            .or_else(|_| self.make_request().send())
             .chain_err(|| "failed to send request")?
             .json()
             .chain_err(|| "failed to parse JSON response")?;
