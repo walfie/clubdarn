@@ -103,7 +103,11 @@ mod series {
 
     #[get("/?<params>")]
     fn by_title(client: State<elastic::Client>, params: ByTitle) -> PageResult<clubdarn::Series> {
-        let series = client.search_series(&params.title)?;
+        let series = client.search_series(&params.title)
+            .or_else(|_| {
+                // Sometimes there are connection timeouts. This retry is a bit of a hack.
+                client.search_series(&params.title)
+            })?;
 
         let page = clubdarn::Paginated {
             page: 1,

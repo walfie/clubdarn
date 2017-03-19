@@ -1,7 +1,7 @@
 use clubdarn;
 use error::*;
 use reqwest;
-use reqwest::header::{Authorization, Basic};
+use reqwest::header::{Authorization, Basic, Connection};
 use serde_json;
 
 pub struct Client {
@@ -45,6 +45,7 @@ impl Client {
 
         let mut request = self.http
             .post(url)
+            .header(Connection::keep_alive())
             .json(&query_json);
 
         if let Some(a) = auth {
