@@ -7,3 +7,5 @@ pro-release-commit-message = "Set version to {{version}} for development (cargo-
 # Ensure we're on master before attempting to release
 pre-release-hook = ["git", "checkout", "master"]
 
+upload-doc = false
+
